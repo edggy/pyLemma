@@ -1,0 +1,24 @@
+Or Intro Left:
+A
+----
+or(A,B)
+
+Contradiction Intro:
+A
+not(A)
+-------
+Contradiction
+
+Not Intro:
+|-(A, Contradiction)
+------
+not(A)
+
+Not Elim:
+not not A
+-----
+A
+
+-------
+or(A, not(A))
+Valid
