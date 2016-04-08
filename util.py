@@ -19,7 +19,7 @@ def prefixSentenceParser(string):
 		return Variable(string[1:-1])
 
 	# the operator is everthing before the first open paren
-	op = string[:firstP]
+	op = Variable(string[:firstP])
 
 	# take the operator and its parens out of the string
 	string = string[firstP+1:-1]
@@ -34,7 +34,6 @@ def prefixSentenceParser(string):
 	# the number of open paren that haven't been closed
 	openCount = 0
 
-	# The 
 	cumStr = ''
 	for part in tokens:
 		# Check if this is the beginning of an argument
@@ -68,28 +67,38 @@ def defaultInferenceParser(string, sentenceParser = None):
 
 	# Split the sting into lines
 	lines = string.split('\n')
-
-	lines = filter(lambda a: not (a.isspace() or len(a) == 0), lines)
+	
+	# Strip all the lines
+	lines = map(lambda a: a.strip(), lines)
+	
+	# Remove all blank lines
+	lines = filter(lambda a: not len(a) == 0, lines)
+	
 	# The name is the first line
 	name = lines.pop(0)
 
 	# The conclusion is the last line
 	conclusion = sentenceParser(lines.pop())
+	
+	# Each other line is a sentence of the premises
 	premises = [sentenceParser(i) for i in lines]
-	#print '79:', name
-	#print '80:', premises
-	#print '81:', conclusion
+	
 	return Inference(name, conclusion, premises)
 
 
 def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
+	# Set the default parders
 	if sentenceParser is None: sentenceParser = prefixSentenceParser
 	if inferenceParser is None: inferenceParser = defaultInferenceParser
 	
 	def init(string, data):
+		# The initial state
+		
+		# Set the state to the line
 		data['state'] = string.strip().lower()	
 	
 	def inf(string, data):
+		# We are in the inference parsing state
 		if string == 'done':
 			inf = inferenceParser(data['curInf'], sentenceParser)
 			data['infs'][inf.name()] = inf
@@ -112,33 +121,47 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 		if 'curProof' not in data or data['curProof'] is None:
 			name = string.strip()
 			data['curProof'] = name
+			#data['proofs'][name] = {'proof':Proof(), 'lines':{}}
 			data['proofs'][name] = Proof()
+			data['curLines'] = {}
+			
 			return
 		
 		curProof = data['proofs'][data['curProof']]
+		lines = data['curLines']
+		
 		toks = string.split('\t')
-		curProof += sentenceParser(toks[1])
+		
+		# Strip all the parts
+		toks = map(lambda a: a.strip(), toks)	
+		
+		# toks[0] = Line number, toks[1] = Sentence, toks[2] = Inference rule name, toks[3] = support step
+		
+		curSen = sentenceParser(toks[1])
+		
+		curProof += curSen
+		
+		lines[toks[0]] = curProof[-1]
+		
+		
 		if len(toks) > 2:
 			curProof[-1] += data['infs'][toks[2]]
 			for i in toks[3].split(','):
-				curProof[-1] += int(i)
+				curProof[-1] += lines[i]
 		else:
 			curProof[-1] += data['infs']['assumption']
 
 		
 	fsm = {None:init, '':init, 'inference':inf, 'proof':prf}
 	
-	
-	
-	
 	data = {'proofs':{}, 'infs':{'assumption':defaultInferenceParser('assumption\na')}, 'state': None}
+	
 	for line in string.split('\n'):
 		
 		# Ignore everything after a '#'
 		line = line.split('#')[0]
-		#print line
+		
 		fsm[data['state']](line, data)
-		#print data
 	
 	return data['proofs']
 			
