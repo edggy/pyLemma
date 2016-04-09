@@ -222,55 +222,41 @@ class Proof:
 		if self.verify() < 1:
 			return False
 		
-		metaAssumption = None
-		if sen.op() == '|-':
-			metaAssumption = sen[0]
+		# put all of the reference sentences into a list
+		refSenList = []
+		for r in ref:
+			refSenList.append(r().getSentence())
 			
+			
+		# for each reference try to match it to an assumption
+		#for curRef in refSenList:
+			#for curPrem in self.getPremises():
+				#curSen = s.getSentence()
+				## Check if the curent premise can map into the current reference
+				#conclusionMap = curPrem.mapInto(r)
+				
+		premises = self.getPremises()
+
+		# TODO: Use other symbols for subproof
+		if sen.op() == '|-':
 			# We are trying to prove the second part
 			sen = sen[1]
+			
+			# Add the subproop assumption to the reference list
+			refSenList.append(sen[0])
+				
 		
-		# put all of the sentences into a list
-		senList = []
-		for r in ref:
-			senList.append(r().getSentence())			
-
 		prevSens = []
 		metaSen = None
 		for s in self:
 			# Assume s is the conclusion
 			curSen = s.getSentence()
-			curInf = s.getInference()
-			
-			# TODO: use other lines not tle last line as the conclusion
-			conclusion = curInf.getConclusion()[-1]
-			
-			from sentence import Variable
-			
-			
-			
-			# Check if s is an assumption
-			if len(curInf.getPremises()) == 0 and conclusion <= Variable():
-				
-				# Check if the current sentence can map into the metaAssumption
-				metaConclusionMap = curSen.mapInto(metaAssumption)
-				if metaConclusionMap:
-					if metaSen:
-						prevSens.append(metaSen)
-					metaSen = curSen
-				else:
-					prevSens.append(curSen)
-			
-			#if metaConclusionMap:
-					
-				# Try to map the current sentence can map into the metaAssumption
-				#metaAssumption = None
-				
-				
+
 			# Check if the current sentence can map into the conclusion
 			conclusionMap = curSen.mapInto(sen)
-			if conclusionMap and metaSen:
-				# Try to map the assumptions to the senList
-				mapping = self.makeMapping(conclusionMap, prevSens, senList)
+			if conclusionMap:
+				# Try to map the assumptions to the refSenList
+				mapping = self.makeMapping(conclusionMap, premises, refSenList)
 				if mapping:
 					# If there is a mapping then we are done
 					return True

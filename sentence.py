@@ -185,7 +185,7 @@ class Variable(Sentence):
 		raise IndexError
 
 	def __iter__(self):
-		return sentenceIterator(self)
+		return SentenceIterator(self)
 
 	def __contains__(self, item):
 		return False

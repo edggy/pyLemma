@@ -60,5 +60,6 @@ done
 
 proof
 Test Proof
-1	or(A, not(A))	Ex Mid
+0	a
+1	or(A, not(A))	Ex Mid	
 done

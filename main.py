@@ -31,5 +31,4 @@ print tstPrf['Test Proof'].verify()
 #    print e.message
 
 for i in tstPrf:
-    print tstPrf[i]
-    print tstPrf[i].verify()
+    print str(tstPrf[i].verify()) + ': ' + repr(tstPrf[i])
