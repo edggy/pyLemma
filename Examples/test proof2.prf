@@ -1,0 +1,67 @@
+inference
+If Elim
+if(P,Q)
+P
+Q
+done
+
+inference
+If Intro
+|-(P,Q)
+if(P,Q)
+done
+
+inference
+MT
+if(P,Q)
+not(Q)
+not(P)
+done
+
+inference
+And Elim Left
+and(P,Q)
+P
+done
+
+inference
+And Elim Right
+and(P,Q)
+Q
+done
+
+inference
+Not Intro
+|-(P,^)
+not(P)
+done
+
+inference
+Contradiction Intro
+P
+not(P)
+^
+done
+
+inference
+Contradiction Elim
+^
+P
+done
+
+proof
+CA
+1	if(A,B)
+2	if(B,C)
+3	A
+4	B	If Elim	1,3
+5	C	If Elim	2,4
+done
+
+proof
+Test Proof
+1	and(if(C,D),if(D,E))
+2	if(C,D)	And Elim Left	1
+3	if(D,E)	And Elim Right	1
+4	|-(C,E)	CA	2,3
+done

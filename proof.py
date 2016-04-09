@@ -9,10 +9,19 @@ class Proof:
 	inference
 	'''	
 	
-	def __init__(self, proofPrinter = None):
+	def __init__(self, name, proofPrinter = None):
+		self._name = name
 		self._lines = []
-		self._printer = proofPrinter
+		if proofPrinter:
+			self._printer = proofPrinter
+		else:
+			import util
+			self._printer = util.defaultProofPrinter		
+		
 		self._inferences = {}
+		
+	def name(self):
+		return self._name
 	
 	def addLine(self):
 		'''
@@ -142,7 +151,7 @@ class Proof:
 		#lines.get(line_num).r = null;
 	#}
 
-	def isValid(self):
+	def verify(self):
 		'''
 		Verifies that the current proof is valid, i.e. each line validly follows from the previous lines
 		'''
@@ -203,6 +212,141 @@ class Proof:
 		# Then return -err_line, so the user can debug
 		return -err_line
 
+	def isValid(self, sen, ref):
+		'''
+		Given a sentence and a set of reference lines, check that this proof proves 
+		that the sentence is deductively follows from the reference lines
+		'''
+		
+		# Check that this proof is valid, if it is not then we canot check anything
+		if self.verify() < 1:
+			return False
+		
+		metaAssumption = None
+		if sen.op() == '|-':
+			metaAssumption = sen[0]
+			
+			# We are trying to prove the second part
+			sen = sen[1]
+		
+		# put all of the sentences into a list
+		senList = []
+		for r in ref:
+			senList.append(r().getSentence())			
+
+		prevSens = []
+		metaSen = None
+		for s in self:
+			# Assume s is the conclusion
+			curSen = s.getSentence()
+			curInf = s.getInference()
+			
+			# TODO: use other lines not tle last line as the conclusion
+			conclusion = curInf.getConclusion()[-1]
+			
+			from sentence import Variable
+			
+			
+			
+			# Check if s is an assumption
+			if len(curInf.getPremises()) == 0 and conclusion <= Variable():
+				
+				# Check if the current sentence can map into the metaAssumption
+				metaConclusionMap = curSen.mapInto(metaAssumption)
+				if metaConclusionMap:
+					if metaSen:
+						prevSens.append(metaSen)
+					metaSen = curSen
+				else:
+					prevSens.append(curSen)
+			
+			#if metaConclusionMap:
+					
+				# Try to map the current sentence can map into the metaAssumption
+				#metaAssumption = None
+				
+				
+			# Check if the current sentence can map into the conclusion
+			conclusionMap = curSen.mapInto(sen)
+			if conclusionMap and metaSen:
+				# Try to map the assumptions to the senList
+				mapping = self.makeMapping(conclusionMap, prevSens, senList)
+				if mapping:
+					# If there is a mapping then we are done
+					return True
+		return False
+	
+	def makeMapping(self, conclusionMap, premises, sentences, exact = True):
+		'''
+		Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
+	
+		conclusionMap - The current mapping of variables into sentences
+		premises - A list of premises
+		sentences - A list of sentences to be mapped into
+		'''
+		# If there are no premises, there is nothing else to map
+		if premises is None or len(premises) == 0:
+			return conclusionMap
+	
+		# If there are more premises than sentences, there is no mapping
+		if (exact and len(premises) != len(sentences)) or len(premises) > len(sentences):
+		        return None
+		
+		from collections import deque
+	
+		premiseQueue = deque(premises)
+	
+		return self.makeMappingHelper(conclusionMap, premiseQueue, sentences)	
+	
+	
+	def makeMappingHelper(self, conclusionMap, premiseQueue, sentences):
+		'''
+		Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
+
+		conclusionMap - The current mapping of variables into sentences
+		premiseQueue - A queue of the premises
+		sentences - A list of sentences to be mapped into
+		'''	
+
+		#print conclusionMap, premiseQueue, sentences
+		#print premiseQueue.pop()
+		# Base case, the queue is empty
+		#if premiseQueue.empty():
+		#	return conclusionMap
+		try:
+			# Get the first premise
+			curPrem = premiseQueue.pop()
+		except IndexError:
+			# Base case, the queue is empty
+			return conclusionMap
+
+		for curSen in sentences:
+			#print 'curPrem =', curPrem
+			#print 'curSen =', curSen
+			# Try find a mapping of curPrem into curSen
+			mapping = curPrem.mapInto(curSen)
+			#print 'mapping =', mapping
+			if mapping:
+				# If a mapping exists
+				import util
+
+				# try to merge this mapping into conclusionMap
+				merge = util.mapMerge(conclusionMap, mapping)
+				#print 'merge =', merge
+				if merge:
+					# If the merge is successful recursively call makeMappingHelper for the merged map, and the remainder of the premiseQueue
+					remainder = self.makeMappingHelper(merge, premiseQueue, sentences)
+					#print 'remainder =', remainder
+					if remainder:
+						# If we can map the remaining premises, this is a valid mapping, return it
+						return remainder
+
+		# If we get here then curPrem can't map inro any of the sentences  
+		# Put the curPrem back into the queue in case we are still in the recursion
+		premiseQueue.append(curPrem)
+
+		# There is no valid mapping
+		return None	
 	#@Override
 	#public int length() {
 		#return lines.size();
@@ -277,10 +421,16 @@ class Proof:
 		return reversed(self._lines)
 	
 	def __str__(self):
-		if not self._printer:
-			import util
-			self._printer = util.defaultProofPrinter
-		return self._printer(self)
+		printed = set([])
+		ret = ''
+		for inf in self._inferences:
+			if inf not in printed:
+				ret += str(self._inferences[inf]) + '\n'
+				printed.add(inf)
+		return ret + self._name + '\n' + self._printer(self)		
+		
+	def __repr__(self):
+		return self._name + '\n' + self._printer(self)
 	
 	def __iadd__(self, value):
 		from inference import Inference
@@ -296,6 +446,21 @@ class Proof:
 	
 	def setPrinter(self, newPrinter):
 		self._printer = newPrinter
+		
+	def getPremises(self):
+		# Check if s is an assumption
+		#if len(curInf.getPremises()) == 0 and conclusion <= Variable():
+		from sentence import Variable
+		prems = []
+		for l in self._lines:
+			inf = l.getInference()
+			if len(inf.getPremises()) == 0 and len(inf.getConclusion()) == 1 and inf.getConclusion()[0] <= Variable():
+				prems.append(l.getSentence())
+		return prems
+		#return filter(lambda a: a,map(lambda a: a.getSentence(), self._lines))
+	
+	def getConclusion(self):
+		return map(lambda a: a.getSentence(), self._lines)
 	
 
 if __name__ == '__main__':

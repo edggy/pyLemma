@@ -2,7 +2,7 @@ import proof
 
 class InferenceIterator:
 	def __init__(self, inf):
-		self._name = inf._name
+		#self._name = inf._name
 		self._conclusion = inf._conclusion
 		self._premises = iter(inf._premises)
 
@@ -11,10 +11,10 @@ class InferenceIterator:
 
 	def next(self):
 		try:
-			if self._name:
-				data = self._name
-				self._name = None
-				return data
+			#if self._name:
+				#data = self._name
+				#self._name = None
+				#return data
 			data = self._premises.next()
 			return data
 		except StopIteration:
@@ -36,21 +36,30 @@ class Inference(proof.Proof):
 
 	def __iter__(self):
 		return InferenceIterator(self)
+	
+	def __str__(self):
+		return self._name + '\n' + self._printer(self)
+		
+	def __repr__(self):
+		return self._name + '\n' + self._printer(self)
 
-	def name(self):
-		return self._name
-
+	def getPremises(self):
+		return self._premises
+	
+	def getConclusion(self):
+		return [self._conclusion]
+	
 	def isValid(self, sen, ref):
 		'''
 		Checks wheather the sentence is a valid conclusion of the references using this inference rule 
 		'''
 		# A inference with no conclusion isalways true i.e. from anything you can derive nothing
-		if self._conclusion == None:
+		if self._conclusion is None:
 			return True
 
 		# Create a mapping of variables from the conclusion to the sentence
 		conclusionMap = self._conclusion.mapInto(sen)
-		if conclusionMap == None:
+		if conclusionMap is None:
 			# If there is no mapping, then this inference is not valid
 			return False
 
@@ -66,71 +75,17 @@ class Inference(proof.Proof):
 		return (mapping is not None)
 
 
-	def makeMapping(self, conclusionMap, premises, sentences):
-		'''
-		Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
+	
 
-		conclusionMap - The current mapping of variables into sentences
-		premises - A list of premises
-		sentences - A list of sentences to be mapped into
-		'''
-		# If there are no premises, there is nothing else to map
-		if premises is None or len(premises) == 0:
-			return conclusionMap
+class MetaInference(proof.Proof):
+	def __init__(self, prf):
+		self._lines = prf._lines
+		self._printer = prf._printer
+		self._inferences = prf._inferences
+		self._proof = prf
 		
-		from collections import deque
-		
-		premiseQueue = deque(premises)
-
-		return self.makeMappingHelper(conclusionMap, premiseQueue, sentences)	
+	def isValid(self, sen, ref):
+		# TODO
+		raise NotImplemented
 	
 	
-	def makeMappingHelper(self, conclusionMap, premiseQueue, sentences):
-		'''
-		Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
-
-		conclusionMap - The current mapping of variables into sentences
-		premiseQueue - A queue of the premises
-		sentences - A list of sentences to be mapped into
-		'''	
-		
-		#print conclusionMap, premiseQueue, sentences
-		#print premiseQueue.pop()
-		# Base case, the queue is empty
-		#if premiseQueue.empty():
-		#	return conclusionMap
-		try:
-			# Get the first premise
-			curPrem = premiseQueue.pop()
-		except IndexError:
-			# Base case, the queue is empty
-			return conclusionMap
-		
-		for curSen in sentences:
-			#print 'curPrem =', curPrem
-			#print 'curSen =', curSen
-			# Try find a mapping of curPrem into curSen
-			mapping = curPrem.mapInto(curSen)
-			#print 'mapping =', mapping
-			if mapping:
-				# If a mapping exists
-				import util
-
-				# try to merge this mapping into conclusionMap
-				merge = util.mapMerge(conclusionMap, mapping)
-				#print 'merge =', merge
-				if merge:
-					# If the merge is successful recursively call makeMappingHelper for the merged map, and the remainder of the premiseQueue
-					remainder = self.makeMappingHelper(merge, premiseQueue, sentences)
-					#print 'remainder =', remainder
-					if remainder:
-						# If we can map the remaining premises, this is a valid mapping, return it
-						return remainder
-
-		# If we get here then curPrem can't map inro any of the sentences  
-		# Put the curPrem back into the queue in case we are still in the recursion
-		premiseQueue.append(curPrem)
-
-		# There is no valid mapping
-		return None
-

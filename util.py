@@ -1,31 +1,47 @@
-def prefixSentenceParser(string):
+def prefixSentenceParser(string, variable = True):
 	from sentence import Sentence
 	from sentence import Variable
+	from sentence import Literal
+	from sentence import InvalidSentenceError
+	
+	if variable:
+		init = Variable
+	else:
+		init = Literal
 	# string = 'or(and(A, B), C)'
 
 	# Remove all the whitespace in the string
 	string = "".join(string.split())
+	
+	parenCount = len(string.replace('(', '')) - len(string.replace(')', ''))
+	if parenCount > 0:
+		raise InvalidSentenceError('Unmatched Close Parentheses')
+	elif parenCount < 0:
+		raise InvalidSentenceError('Unmatched Open Parentheses')
+	
 	# find the first open paren
 	firstP = string.find('(')
 
 	if firstP < 0:
 		# if there is no open paren, then this is a variable
 		# 'A'
-		return Variable(string)
+		return init(string)
 
 	elif firstP == 0:
 		# if the open paren is the first character, then this is also a variable surrounded by parens
 		# '(A)'
-		return Variable(string[1:-1])
+		
+		return init(string[1:-1])
 
 	# the operator is everthing before the first open paren
-	op = Variable(string[:firstP])
+	op = Literal(string[:firstP])
 
 	# take the operator and its parens out of the string
 	string = string[firstP+1:-1]
 	tokens = string.split(',')
 	if len(tokens) == 1:
-		var = Variable(string)
+		# No commas
+		var = init(string)
 		return Sentence(op, var)
 
 	# list of the arguments as sentences or variables
@@ -116,13 +132,15 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 		
 		if string == 'done':
 			data['state'] = None
+			data['curProof'] = None
 			return			
 		
 		if 'curProof' not in data or data['curProof'] is None:
 			name = string.strip()
 			data['curProof'] = name
 			#data['proofs'][name] = {'proof':Proof(), 'lines':{}}
-			data['proofs'][name] = Proof()
+			data['proofs'][name] = Proof(name)
+			data['infs'][name] = data['proofs'][name]
 			data['curLines'] = {}
 			
 			return
@@ -142,26 +160,39 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 		curProof += curSen
 		
 		lines[toks[0]] = curProof[-1]
+		if len(toks) < 2:
+			raise LineError
 		
-		
-		if len(toks) > 2:
-			curProof[-1] += data['infs'][toks[2]]
-			for i in toks[3].split(','):
-				curProof[-1] += lines[i]
-		else:
-			curProof[-1] += data['infs']['assumption']
+		if len(toks) == 2:
+			curProof[-1] += data['infs']['Assumption']
+		if len(toks) >= 3:
+			try:
+				curProof[-1] += data['infs'][toks[2]]
+			except KeyError as e:
+				raise LineError('%s is not a defined inference rule or proof' % e.message)		
+		if len(toks) >= 4:
+			try:
+				for i in toks[3].split(','):
+					curProof[-1] += lines[i.strip()]
+			except KeyError as e:
+				raise LineError('%s is not a line' % e.message)
 
 		
 	fsm = {None:init, '':init, 'inference':inf, 'proof':prf}
 	
-	data = {'proofs':{}, 'infs':{'assumption':defaultInferenceParser('assumption\na')}, 'state': None}
+	data = {'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\nA')}, 'state': None}
 	
-	for line in string.split('\n'):
+	from sentence import InvalidSentenceError
+	for n, line in enumerate(string.split('\n')):
 		
-		# Ignore everything after a '#'
-		line = line.split('#')[0]
-		
-		fsm[data['state']](line, data)
+		try:
+			# Ignore everything after a '#'
+			line = line.split('#')[0].strip()
+			if len(line) != 0:
+				fsm[data['state']](line, data)
+		except (InvalidSentenceError, LineError) as e:
+			e.message = 'Error on line %d:\t' % (n+1) + e.message
+			raise e
 	
 	return data['proofs']
 			
@@ -233,7 +264,8 @@ def mapMerge(mappingA, mappingB):
 
 	return merge
 
-
+class LineError(Exception):
+	pass
 
 '''package verifier.impl;
 

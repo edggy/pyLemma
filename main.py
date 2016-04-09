@@ -1,6 +1,7 @@
 #import proof
 
 import util
+import sys
 
 prf = '''
 inference
@@ -18,8 +19,17 @@ Test Proof
 done
 '''
 
-tstPrf = util.defaultProofParser(prf)['Test Proof']
-print tstPrf._inferences['MP']
-print tstPrf
-print tstPrf.isValid()
+with open(sys.argv[1]) as f:
+    prf = f.read()
 
+#try:
+tstPrf = util.defaultProofParser(prf)
+#print tstPrf._inferences
+print tstPrf['Test Proof']
+print tstPrf['Test Proof'].verify()
+#except Exception as e:
+#    print e.message
+
+for i in tstPrf:
+    print tstPrf[i]
+    print tstPrf[i].verify()

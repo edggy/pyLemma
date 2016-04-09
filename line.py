@@ -1,5 +1,6 @@
 import sentence
-import inference
+#import inference
+import proof
 
 class Line:
     '''
@@ -22,7 +23,7 @@ class Line:
             self.addSupport(other)  
         elif isinstance(other, (int, long)):
             self.addSupport(self._proof()[other]) 
-        elif isinstance(other, inference.Inference):
+        elif isinstance(other, proof.Proof):
             infs = self._proof()._inferences
             if other.name() not in infs:
                 infs[other.name()] = other
@@ -36,9 +37,16 @@ class Line:
     def __str__(self):
         supportLines = [i()._num for i in self._support]
         supportLines.sort()
+        ret = str(self._num) + '\t' + str(self._sentence)
         if self._inference is not None:
-            return str(self._num) + '\t' + str(self._sentence) + '\t' + str(self._inference.name()) + '\t' + str(supportLines)
-        return str(self._num) + '\t' + str(self._sentence) + '\t' + '???' + '\t' + str(supportLines)
+            ret += '\t' + str(self._inference.name())
+        else:
+            ret += '\t' + '???'
+        
+        if len(supportLines) > 0:
+            ret += '\t' + str(supportLines)[1:-1]
+            
+        return ret
     
     def __hash__(self):
         return hash(str(self))

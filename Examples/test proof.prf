@@ -1,0 +1,13 @@
+inference
+MP
+if(P,Q)
+P
+Q
+done
+
+proof
+Test Proof
+5	if(A,B)
+6	A
+7	B	MP	5,6
+done

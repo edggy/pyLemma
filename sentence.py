@@ -59,7 +59,7 @@ class Sentence:
 
 		'''
 		# self >= other iff other <= self
-		return other  <= self
+		return other <= self
 
 	def __hash__(self):
 		# TODO: Make better hash
@@ -82,7 +82,13 @@ class Sentence:
 		return SentenceIterator(self)
 
 	def __contains__(self, item):
-		raise NotImplemented
+		for i in self._args:
+			# If the item is an argument or the item is in the argument, then it is in this
+			if item == i or item in i:
+				return True
+		return False
+		
+		
 
 	def __copy__(self):
 		import copy
@@ -108,8 +114,8 @@ class Sentence:
 		a.mapInto(b) == {'a': 'q or p', 'b':'r iff s'}
 		'''
 		
-		# Check that the main operators are the same
-		if self.op() != other.op():
+		# Check that the main operators and the arity are the same
+		if other is None or self.op() != other.op() or self.arity() != other.arity():
 			return None
 
 		result = {}
@@ -136,7 +142,7 @@ class Sentence:
 		return len(self._args)
 
 class Variable(Sentence):
-	def __init__(self, name):
+	def __init__(self, name = 'A'):
 		self._name = ''.join(str(name).split())
 
 	def __repr__(self):
@@ -157,17 +163,17 @@ class Variable(Sentence):
 		'''        
 		return True
 
-	#def __eq__(self, other):
-		#'''
-		#Two variables are equal if they have the same representation
-		#'''
-		#return hash(self) == hash(other)
+	def __eq__(self, other):
+		'''
+		A variable is equal to other if other is not a variable or they share the same representation
+		'''
+		return not isinstance(other, Variable) or str(self) == str(other)
 
-	#def __ne__(self, other):
-		#'''
-		#Two variables are not equal if they have different representations
-		#'''        
-		#return hash(self) != hash(other)
+	def __ne__(self, other):
+		'''
+		A variable is not equal to other if other is a variable and they dont share the same representation
+		'''        
+		return isinstance(other, Variable) and str(self) != str(other)
 
 	def __hash__(self):
 		return hash(self._name)
@@ -191,10 +197,35 @@ class Variable(Sentence):
 		return self    
 	
 	def op(self):
-		return None
+		return self
 
 	def mapInto(self, other):
 		return {self:other}
+	
+class Literal(Variable):
+	def __lt__(self, other):
+		'''
+		Vacuously false since a literal cannot be mapped except to itsself
+		'''
+		return False
+	
+	def __eq__(self, other):
+		'''
+		A Literal is equal if they have the same representation
+		'''
+		return str(self) == str(other)
+	
+	def __ne__(self, other):
+		'''
+		A Literal is equal if they have the different representation
+		'''        
+		return str(self) != str(other)	
+	
+	def mapInto(self, other):
+		return None	
+
+class InvalidSentenceError(Exception):
+	pass
 
 if __name__ == '__main__':
 	def infix(sen):
