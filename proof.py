@@ -8,7 +8,7 @@ class Proof:
 	follows from the preceding sentences in the sequence by a rule of
 	inference
 	'''	
-	
+
 	def __init__(self, name, proofPrinter = None):
 		self._name = name
 		self._lines = []
@@ -17,48 +17,49 @@ class Proof:
 		else:
 			import util
 			self._printer = util.defaultProofPrinter		
-		
+
 		self._inferences = {}
-		
+		self._numbering = lambda x: x
+
 	def name(self):
 		return self._name
-	
+
 	def addLine(self):
 		'''
 		Add an empty line to the end of the proof
 		'''
 		self._lines.append(line.Line(self))
-		
+
 	def addLines(self, amount):
 		'''
 		Adds an **amount** of empty lines to the end of the proof
 		'''
 		for i in range(amount):
 			self.addLine()
-	
+
 	def insertLine(self, index):
 		'''
 		Inserts an empty line before **index**
 		'''
 		self._lines.insert(index, None)
-	
+
 	def insertLines(self, index, amount):
 		'''
 		Adds an **amount** of empty lines before **index**
 		'''
 		for i in range(amount):
 			self._lines.insert(index + i, None)
-	
+
 	def removeLine(self, line_num):
 		#lines.remove(line_num);
 		raise NotImplemented
-	
+
 	def removeLines(self, line_num, amount):
 		#for(int i = 0; i < amount; i++) {
 			#removeLine(line_num);
 		#}
 		raise NotImplemented
-	
+
 	def setSentence(self, line_num, sen):
 		self._lines[line_num] += sen
 
@@ -100,7 +101,7 @@ class Proof:
 	#@Override
 	#public void addInference(int line_num, verifier.Inference inf) throws IndexOutOfBoundsException {
 		#lines.get(line_num).i = inf;
-		
+
 	#}
 
 	#@Override
@@ -119,19 +120,19 @@ class Proof:
 		#if not isinstance(ref, Line):
 		#	ref = self._lines[ref]
 		#self._lines[line_num].addSupport(ref)
-		
+
 	#@Override
 	#public void addReference(int line_num, verifier.Reference ref) throws IndexOutOfBoundsException {
 		#Line curLine = lines.get(line_num);
 		#if(curLine.r == null) curLine.r = ref;
 		#curLine.r.addReferences(ref.getReference());
 	#}
-	
+
 	#@Override
 	#public void addReference(int line_num, int ref_line) throws IndexOutOfBoundsException {
 		#verifier.Reference ref = new Reference();
 		#ref.addReference(lines.get(ref_line));
-		
+
 		#addReference(line_num, ref);
 	#}
 
@@ -145,7 +146,7 @@ class Proof:
 		#if(curRef == null) return;
 		#curRef.removeReference(lines.get(ref_line));
 	#}
-	
+
 	#@Override
 	#public void removeReferences(int line_num) throws IndexOutOfBoundsException {
 		#lines.get(line_num).r = null;
@@ -155,27 +156,27 @@ class Proof:
 		'''
 		Verifies that the current proof is valid, i.e. each line validly follows from the previous lines
 		'''
-		
+
 		# Assume there are no errors
 		err_line = None
-		
+
 		# Go through each line and check that it is valid
 		for line_num, line in enumerate(self._lines):			
-			
+
 			# inf is the inference rule used
 			inf = line.getInference()
-			
+
 			# sen is the sentence at this line
 			sen = line.getSentence()
-			
+
 			# if there is no rule, then this line is not valid, unless the sentence is also None (this is to allow empty lines)
 			if inf is None and sen is not None:
 				err_line = line_num
 				break
-			
+
 			# sup is the set of support steps
 			sup = line.getSuppprt()
-			
+
 			# Check each reference (which is a weakref to a line)
 			for ref in sup:
 				try:
@@ -187,28 +188,28 @@ class Proof:
 					# This implies that the line no longer exists 
 					err_line = line_num
 					break
-				
+
 			# This is used to check if there was an error in the previous for loop
 			if err_line is not None:
 				break
-			
+
 			# Check that the sentence is a valid conclusion of the support steps using thie given inference rule
 			if not inf.isValid(sen, sup):
 				err_line = line_num
 				break
-			
+
 			# Assign this line a line number since it is valid
 			line._num = line_num
-			
-		
+
+
 		# If there are no errors, return 1
 		if err_line is None:		
 			return 1
-		
+
 		# Since this is an invalid proof, first set all the line numbers to None
 		for line in self._lines:
 			line._num = None
-			
+
 		# Then return -err_line, so the user can debug
 		return -err_line
 
@@ -217,35 +218,35 @@ class Proof:
 		Given a sentence and a set of reference lines, check that this proof proves 
 		that the sentence is deductively follows from the reference lines
 		'''
-		
+
 		# Check that this proof is valid, if it is not then we canot check anything
 		if self.verify() < 1:
 			return False
-		
+
 		# put all of the reference sentences into a list
 		refSenList = []
 		for r in ref:
 			refSenList.append(r().getSentence())
-			
-			
+
+
 		# for each reference try to match it to an assumption
 		#for curRef in refSenList:
 			#for curPrem in self.getPremises():
 				#curSen = s.getSentence()
 				## Check if the curent premise can map into the current reference
 				#conclusionMap = curPrem.mapInto(r)
-				
+
 		premises = self.getPremises()
 
 		# TODO: Use other symbols for subproof
 		if sen.op() == '|-':
-			# We are trying to prove the second part
-			sen = sen[1]
-			
 			# Add the subproop assumption to the reference list
 			refSenList.append(sen[0])
-				
-		
+
+			# We are trying to prove the second part
+			sen = sen[1]			
+
+
 		prevSens = []
 		metaSen = None
 		for s in self:
@@ -261,11 +262,11 @@ class Proof:
 					# If there is a mapping then we are done
 					return True
 		return False
-	
+
 	def makeMapping(self, conclusionMap, premises, sentences, exact = True):
 		'''
 		Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
-	
+
 		conclusionMap - The current mapping of variables into sentences
 		premises - A list of premises
 		sentences - A list of sentences to be mapped into
@@ -273,18 +274,18 @@ class Proof:
 		# If there are no premises, there is nothing else to map
 		if premises is None or len(premises) == 0:
 			return conclusionMap
-	
+
 		# If there are more premises than sentences, there is no mapping
 		if (exact and len(premises) != len(sentences)) or len(premises) > len(sentences):
-		        return None
-		
+			return None
+
 		from collections import deque
-	
+
 		premiseQueue = deque(premises)
-	
+
 		return self.makeMappingHelper(conclusionMap, premiseQueue, sentences)	
-	
-	
+
+
 	def makeMappingHelper(self, conclusionMap, premiseQueue, sentences):
 		'''
 		Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
@@ -361,12 +362,12 @@ class Proof:
 		#}
 		#return l;
 	#}
-	
+
 	#@Override
 	#public Line getLastLine() {
 		#return lines.get(lines.size()-1);
 	#}
-	
+
 	#@Override
 	#public String toString() {
 		#String res = "";
@@ -455,15 +456,18 @@ class Proof:
 				prems.append(l.getSentence())
 		return prems
 		#return filter(lambda a: a,map(lambda a: a.getSentence(), self._lines))
-	
+
 	def getConclusion(self):
 		return map(lambda a: a.getSentence(), self._lines)
 	
+	def getInferences(self):
+		return self._inferences
+
 
 if __name__ == '__main__':
 	import util
 	import inference
-	
+
 	p = Proof()
 	p += util.prefixSentenceParser('if(a,or(b,a))')
 	p += util.prefixSentenceParser('a')
@@ -475,9 +479,9 @@ if __name__ == '__main__':
 	#print p[1]
 	#print
 	print p
-	
+
 	assumption = util.defaultInferenceParser('assumption\na')
-	
+
 	mp = util.defaultInferenceParser('MP\nP\nif(P,Q)\nQ')
 	mp.setPrinter(util.defaultInferencePrinter)
 	print mp
@@ -487,4 +491,4 @@ if __name__ == '__main__':
 	p[2] += mp
 	print p
 	print p.isValid()
-	
+

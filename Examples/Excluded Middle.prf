@@ -1,38 +1,4 @@
-inference
-Or Intro Left
-A
-#----
-or(A,B)
-done
-
-inference
-Or Intro Right
-B
-#----
-or(A,B)
-done
-
-inference
-Contradiction Intro
-A
-not(A)
-#-------
-Contradiction
-done
-
-inference
-Not Intro
-|-(A, Contradiction)
-#------
-not(A)
-done
-
-inference
-Not Elim
-not(not(A))
-#-----
-A
-done
+include Fitch Rules.inf
 
 proof
 Ex Mid sub2
@@ -60,6 +26,5 @@ done
 
 proof
 Test Proof
-0	a
-1	or(A, not(A))	Ex Mid	
+1	or(A, not(A))	Ex Mid
 done

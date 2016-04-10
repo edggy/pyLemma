@@ -19,16 +19,21 @@ Test Proof
 done
 '''
 
-with open(sys.argv[1]) as f:
-    prf = f.read()
+#with open(sys.argv[1]) as f:
+    #prf = f.read()
 
-#try:
-tstPrf = util.defaultProofParser(prf)
-#print tstPrf._inferences
-print tstPrf['Test Proof']
-print tstPrf['Test Proof'].verify()
-#except Exception as e:
-#    print e.message
+try:
+    tstPrf = util.defaultProofParser(sys.argv[1])
+    print tstPrf
+    [tstPrf[i].setNumbering(lambda x: x+1) for i in tstPrf]
+    print tstPrf['Test Proof']
+    valid = tstPrf['Test Proof'].verify()
+    if valid > 0:
+        print 'Valid'
+    else:
+        print 'Invalid:\tError on line %d' % -valid
+except Exception as e:
+    print e.message
 
-for i in tstPrf:
-    print str(tstPrf[i].verify()) + ': ' + repr(tstPrf[i])
+#for i in tstPrf:
+    #print str(tstPrf[i].verify()) + ': ' + repr(tstPrf[i])
