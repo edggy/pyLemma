@@ -76,6 +76,7 @@ def prefixSentenceParser(string, variable = True):
 	return res
 
 def defaultInferenceParser(string, sentenceParser = None):
+	
 	if sentenceParser is None:
 		sentenceParser = prefixSentenceParser
 
@@ -103,15 +104,42 @@ def defaultInferenceParser(string, sentenceParser = None):
 
 
 def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
+	import os
+	path = os.path.dirname(os.path.realpath(__file__))
+	filename = None	
+	try:
+		with open(string) as f:
+			path = os.path.dirname(os.path.realpath(string))
+			filename = os.path.join(path, string)
+			string = f.read()
+			
+			
+	except:
+		pass
+	try:
+		# Try to read a file if it is one
+		string = string.read()
+		path = os.path.dirname(os.path.realpath(string.name))
+		filename = os.path.join(path, string.name)
+		
+	except:
+		pass	
 	# Set the default parders
 	if sentenceParser is None: sentenceParser = prefixSentenceParser
 	if inferenceParser is None: inferenceParser = defaultInferenceParser
 	
 	def init(string, data):
 		# The initial state
+
+		if string.startswith(data['include']):
+			filename = os.path.join(data['path'], string[len(data['include']):].strip())
+			with open(filename) as f:
+				for n, line in enumerate(reversed(f.read().split('\n'))):
+					data['queue'].appendleft((line, n, filename))
 		
-		# Set the state to the line
-		data['state'] = string.strip().lower()	
+		else:	
+			# Set the state to the line
+			data['state'] = string.strip().lower()	
 	
 	def inf(string, data):
 		# We are in the inference parsing state
@@ -142,7 +170,6 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 			data['proofs'][name] = Proof(name)
 			data['infs'][name] = data['proofs'][name]
 			data['curLines'] = {}
-			
 			return
 		
 		curProof = data['proofs'][data['curProof']]
@@ -180,19 +207,29 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 		
 	fsm = {None:init, '':init, 'inference':inf, 'proof':prf}
 	
-	data = {'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\nA')}, 'state': None}
+	from collections import deque
+	
+	linequeue = deque()
+	
+	for n, line in enumerate(string.split('\n')):
+	        linequeue.append((line, n, filename))
+	
+	
+	
+	data = {'queue':linequeue, 'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\nA')}, 'state': None, 'include':'include', 'path':path}
 	
 	from sentence import InvalidSentenceError
-	for n, line in enumerate(string.split('\n')):
-		
+
+	while len(data['queue']) > 0:
+		line, n, filename = data['queue'].popleft()
 		try:
 			# Ignore everything after a '#'
 			line = line.split('#')[0].strip()
 			if len(line) != 0:
 				fsm[data['state']](line, data)
 		except (InvalidSentenceError, LineError) as e:
-			e.message = 'Error on line %d:\t' % (n+1) + e.message
-			raise e
+			e.message = 'Error in "%s", line %d:\t%s' % (filename, n+1, e.message)
+			raise LineError(e.message)
 	
 	return data['proofs']
 			
@@ -200,11 +237,13 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 		
 
 def prefixSentencePrinter(sen):
+	if sen.arity() == 0:
+		return str(sen.op())
 	string = ''
-	string += str(sen._op)
+	string += str(sen.op())
 	string += '('
 	first = True
-	for arg in sen._args:
+	for arg in sen:
 		if not first:
 			string += ',' + str(arg)
 		else:
@@ -218,20 +257,27 @@ def infixSentencePrinter(sen):
 	if sen.arity() == 2:
 		return '(' + str(sen[0]) + ' ' + str(sen.op()) + ' ' + str(sen[1]) + ')'
 
-	return prefixPrinter(sen)
+	return prefixSentencePrinter(sen)
 
-def defaultProofPrinter(p):
+def defaultProofPrinter(p, printedInferences = set([])):
 	res = ''
+	inferences = p.getInferences()
+	for inf in inferences:
+		if inf not in printedInferences:
+			res += str(inferences[inf]) + '\n\n'
+			printedInferences.add(inf)
+	
+	res += 'proof\n' + p.name() + '\n'
 	for n, i in enumerate(p):
 		i._num = n
 		res += str(i) + '\n'
-	return res
+	return res + 'done'
 
 def defaultInferencePrinter(inf):
-	res = ''
+	res = 'inference\n'
 	for line in inf:
 		res += str(line) + '\n'
-	return res
+	return res + 'done'
 
 def mapMerge(mappingA, mappingB):
 	'''

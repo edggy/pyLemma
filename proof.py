@@ -377,47 +377,41 @@ class Proof:
 		#}
 		#return res.substring(0, res.length() - 1);
 	#}
-	
+
 	def __len__(self):
 		'''
 		The length of the proof is equal to the number of lines
 		'''
 		# TODO: don't count empty lines
 		return len(self._lines)
-	
+
 	def __getitem__(self, key):
 		return self._lines[key]
-	
+
 	def __setitem__(self, key, value):
 
 		self._lines[key] = value
-		
+
 		'''if isinstance(value, Sentence):
 			self.setSentence(key, value)
 		elif isinstance(value, Inference):
 			self.setInference(key, value)
 		else:
 			self.addSupport(key, value)'''
-			
-	
+
+
 	def __iter__(self):
 		return iter(self._lines)
-	
+
 	def __reversed__(self):
 		return reversed(self._lines)
-	
+
 	def __str__(self):
-		printed = set([])
-		ret = ''
-		for inf in self._inferences:
-			if inf not in printed:
-				ret += str(self._inferences[inf]) + '\n'
-				printed.add(inf)
-		return ret + self._name + '\n' + self._printer(self)		
-		
+		return self._printer(self)		
+
 	def __repr__(self):
 		return self._name + '\n' + self._printer(self)
-	
+
 	def __iadd__(self, value):
 		from inference import Inference
 		if isinstance(value, Inference) and value.name() not in self._inferences:
@@ -429,10 +423,27 @@ class Proof:
 		self.addLine()
 		self._lines[-1] += value
 		return self
-	
+
 	def setPrinter(self, newPrinter):
+		'''
+		Sets the printer for this proof
+		
+		A printer should take in a proof and return its string representation
+		'''
 		self._printer = newPrinter
 		
+	def setNumbering(self, newNumbering):
+		'''
+		Sets the numbering scheme for the lines
+		
+		A numbering scheme should take a line number starting at 0 and return what it should look like
+		
+		Example:
+		
+		if newNumbering is 'lambda x: x+1' the numbering will start at 1 instaed of 0
+		'''
+		self._numbering = newNumbering
+
 	def getPremises(self):
 		# Check if s is an assumption
 		#if len(curInf.getPremises()) == 0 and conclusion <= Variable():
