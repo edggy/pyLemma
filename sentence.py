@@ -129,14 +129,38 @@ class Sentence:
 			
 			result = util.mapMerge(result, mapping)
 		return result
+	
+	def applyFunction(self, function, data = None):
+		args = []
+		sen = function(self, data)
+		for s in sen:
+			args.append(s.applyFunction(function, data))
+		return Sentence(sen.op(), *args)
+			
+	
+	def subsitute(self, mapping):
+		
+		if self in mapping:
+			return mapping[self]
+		
+		args = []
+		for s in self:
+			if s in mapping:
+				args.append(mapping[s])
+			else:
+				args.append(s.subsitute(mapping))
+				
+		sen = Sentence(self.op(), *args)
+		sen._printer = self._printer
+		return sen
 
 	def op(self):
 		return self._op
 
 	def setPrinter(self, printer):
 		self._printer = printer
-		for arg in self._args:
-			arg._printer = printer
+		for arg in self:
+			arg.setPrinter(printer)
 
 	def arity(self):
 		return len(self._args)
@@ -198,9 +222,15 @@ class Variable(Sentence):
 	
 	def op(self):
 		return self
+	
+	def arity(self):
+		return 0
 
 	def mapInto(self, other):
 		return {self:other}
+	
+	def subsitute(self, mapping):
+		return self
 	
 class Literal(Variable):
 	def __lt__(self, other):
