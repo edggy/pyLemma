@@ -3,7 +3,7 @@ def prefixSentenceParser(string, variable = True):
 	from sentence import Variable
 	from sentence import Literal
 	from sentence import InvalidSentenceError
-	
+
 	if variable:
 		init = Variable
 	else:
@@ -12,13 +12,13 @@ def prefixSentenceParser(string, variable = True):
 
 	# Remove all the whitespace in the string
 	string = "".join(string.split())
-	
+
 	parenCount = len(string.replace('(', '')) - len(string.replace(')', ''))
 	if parenCount > 0:
 		raise InvalidSentenceError('Unmatched Close Parentheses')
 	elif parenCount < 0:
 		raise InvalidSentenceError('Unmatched Open Parentheses')
-	
+
 	# find the first open paren
 	firstP = string.find('(')
 
@@ -30,7 +30,7 @@ def prefixSentenceParser(string, variable = True):
 	elif firstP == 0:
 		# if the open paren is the first character, then this is also a variable surrounded by parens
 		# '(A)'
-		
+
 		return init(string[1:-1])
 
 	# the operator is everthing before the first open paren
@@ -76,7 +76,7 @@ def prefixSentenceParser(string, variable = True):
 	return res
 
 def defaultInferenceParser(string, sentenceParser = None):
-	
+
 	if sentenceParser is None:
 		sentenceParser = prefixSentenceParser
 
@@ -84,22 +84,22 @@ def defaultInferenceParser(string, sentenceParser = None):
 
 	# Split the sting into lines
 	lines = string.split('\n')
-	
+
 	# Strip all the lines
 	lines = map(lambda a: a.strip(), lines)
-	
+
 	# Remove all blank lines
 	lines = filter(lambda a: not len(a) == 0, lines)
-	
+
 	# The name is the first line
 	name = lines.pop(0)
 
 	# The conclusion is the last line
 	conclusion = sentenceParser(lines.pop())
-	
+
 	# Each other line is a sentence of the premises
 	premises = [sentenceParser(i) for i in lines]
-	
+
 	return Inference(name, conclusion, premises)
 
 
@@ -112,8 +112,8 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 			path = os.path.dirname(os.path.realpath(string))
 			filename = os.path.join(path, string)
 			string = f.read()
-			
-			
+
+
 	except:
 		pass
 	try:
@@ -121,26 +121,31 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 		string = string.read()
 		path = os.path.dirname(os.path.realpath(string.name))
 		filename = os.path.join(path, string.name)
-		
+
 	except:
 		pass	
 	# Set the default parders
 	if sentenceParser is None: sentenceParser = prefixSentenceParser
 	if inferenceParser is None: inferenceParser = defaultInferenceParser
-	
+
 	def init(string, data):
 		# The initial state
 
 		if string.startswith(data['include']):
-			filename = os.path.join(data['path'], string[len(data['include']):].strip())
-			with open(filename) as f:
-				for n, line in enumerate(reversed(f.read().split('\n'))):
-					data['queue'].appendleft((line, n, filename))
-		
+			filename = os.path.normpath(string[len(data['include']):].strip())
+			if not os.path.isabs(filename):
+				filename = os.path.join(data['path'], filename)
+				
+			if filename not in data['imported']:
+				with open(filename) as f:
+					for n, line in enumerate(reversed(f.read().split('\n'))):
+						data['queue'].appendleft((line, n, filename))
+				data['imported'].add(filename)
+
 		else:	
 			# Set the state to the line
 			data['state'] = string.strip().lower()	
-	
+
 	def inf(string, data):
 		# We are in the inference parsing state
 		if string == 'done':
@@ -149,20 +154,20 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 			data['curInf'] = None
 			data['state'] = None
 			return
-		
+
 		if 'curInf' in data and data['curInf'] is not None:
 			data['curInf'] += '\n' + string
 		else:
 			data['curInf'] = string
-	
+
 	def prf(string, data):
 		from proof import Proof
-		
+
 		if string == 'done':
 			data['state'] = None
 			data['curProof'] = None
 			return			
-		
+
 		if 'curProof' not in data or data['curProof'] is None:
 			name = string.strip()
 			data['curProof'] = name
@@ -171,25 +176,25 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 			data['infs'][name] = data['proofs'][name]
 			data['curLines'] = {}
 			return
-		
+
 		curProof = data['proofs'][data['curProof']]
 		lines = data['curLines']
-		
+
 		toks = string.split('\t')
-		
+
 		# Strip all the parts
 		toks = map(lambda a: a.strip(), toks)	
-		
+
 		# toks[0] = Line number, toks[1] = Sentence, toks[2] = Inference rule name, toks[3] = support step
-		
+
 		curSen = sentenceParser(toks[1])
-		
+
 		curProof += curSen
-		
+
 		lines[toks[0]] = curProof[-1]
 		if len(toks) < 2:
 			raise LineError
-		
+
 		if len(toks) == 2:
 			curProof[-1] += data['infs']['Assumption']
 		if len(toks) >= 3:
@@ -204,24 +209,25 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 			except KeyError as e:
 				raise LineError('%s is not a line' % e.message)
 
-		
+
 	fsm = {None:init, '':init, 'inference':inf, 'proof':prf}
-	
+
 	from collections import deque
-	
+
 	linequeue = deque()
-	
+
 	for n, line in enumerate(string.split('\n')):
-	        linequeue.append((line, n, filename))
-	
-	
-	
-	data = {'queue':linequeue, 'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\nA')}, 'state': None, 'include':'include', 'path':path}
-	
+		linequeue.append((line, n, filename))
+
+
+
+	data = {'queue':linequeue, 'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\nA')}, 'state': None, 'include':'include', 'path':path, 'imported':set([filename])}
+
 	from sentence import InvalidSentenceError
 
 	while len(data['queue']) > 0:
 		line, n, filename = data['queue'].popleft()
+		data['path'] = os.path.dirname(os.path.realpath(filename))
 		try:
 			# Ignore everything after a '#'
 			line = line.split('#')[0].strip()
@@ -230,11 +236,11 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 		except (InvalidSentenceError, LineError) as e:
 			e.message = 'Error in "%s", line %d:\t%s' % (filename, n+1, e.message)
 			raise LineError(e.message)
-	
+
 	return data['proofs']
-			
-		
-		
+
+
+
 
 def prefixSentencePrinter(sen):
 	if sen.arity() == 0:
@@ -266,7 +272,7 @@ def defaultProofPrinter(p, printedInferences = set([])):
 		if inf not in printedInferences:
 			res += str(inferences[inf]) + '\n\n'
 			printedInferences.add(inf)
-	
+
 	res += 'proof\n' + p.name() + '\n'
 	for n, i in enumerate(p):
 		i._num = n
