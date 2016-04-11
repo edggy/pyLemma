@@ -3,28 +3,25 @@
 import util
 import sys
 
-prf = '''
-inference
-MP
-if(P,Q)
-P
-Q
-done
+import os.path
+#"Examples\Excluded Middle.prf"
+filename = ''
+if len(sys.argv) > 1:
+    filename = sys.argv[1]
+    
+if not os.path.isfile(filename):
+    # python -m pip install easygui
+    try:
+        import easygui
+        filename = easygui.fileopenbox()
+    except ImportError, e:
+        print 'Install easygui for a file selcct dialog box or add a command line argument for the file you want to check'
 
-proof
-Test Proof
-5\tif(A,B)
-6\tA
-7\tB\tMP\t5,6
-done
-'''
-
-#with open(sys.argv[1]) as f:
-    #prf = f.read()
+    
 
 try:
-    tstPrf = util.defaultProofParser(sys.argv[1])
-    print tstPrf
+    tstPrf = util.defaultProofParser(filename)
+    #print tstPrf
     [tstPrf[i].setNumbering(lambda x: x+1) for i in tstPrf]
     print tstPrf['Test Proof']
     valid = tstPrf['Test Proof'].verify()
