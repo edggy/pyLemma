@@ -15,9 +15,9 @@ def prefixSentenceParser(string, variable = True):
 
 	parenCount = len(string.replace('(', '')) - len(string.replace(')', ''))
 	if parenCount > 0:
-		raise InvalidSentenceError('Unmatched Close Parentheses')
+		raise InvalidSentenceError('Unmatched Close Parenthesis')
 	elif parenCount < 0:
-		raise InvalidSentenceError('Unmatched Open Parentheses')
+		raise InvalidSentenceError('Unmatched Open Parenthesis')
 
 	# find the first open paren
 	firstP = string.find('(')
