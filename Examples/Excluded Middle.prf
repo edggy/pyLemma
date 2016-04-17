@@ -1,4 +1,4 @@
-include Fitch Rules.inf
+include Rules/F Rules.inf
 
 proof
 Ex Mid sub2

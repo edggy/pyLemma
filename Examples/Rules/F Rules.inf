@@ -1,0 +1,110 @@
+inference
+Reit
+A
+#-----
+A
+done
+
+inference
+Not Intro
+|-(A, Contradiction)
+#------
+not(A)
+done
+
+inference
+Not Elim
+not(not(A))
+#-----
+A
+done
+
+inference
+And Intro
+A
+B
+#------
+and(A,B)
+done
+
+inference
+And Elim Left
+and(A,B)
+#------
+A
+done
+
+inference
+And Elim Right
+and(A,B)
+#------
+B
+done
+
+inference
+Or Intro Left
+A
+#----
+or(A,B)
+done
+
+inference
+Or Intro Right
+B
+#----
+or(A,B)
+done
+
+inference
+Or Elim
+or(A,B)
+|-(A,C)
+|-(B,C)
+#-------
+C
+done
+
+inference
+If Intro
+|-(A,B)
+if(A,B)
+done
+
+inference
+If Elim
+if(A,B)
+A
+#-----
+B
+done
+
+inference
+Iff Intro
+|-(A,B)
+|-(B,A)
+#------
+iff(A,B)
+done
+
+inference
+Iff Elim
+iff(A,B)
+A
+#------
+B
+done
+
+inference
+Contradiction Intro
+A
+not(A)
+#-------
+Contradiction
+done
+
+inference
+Contradiction Elim
+Contradiction
+#-------
+A
+done
