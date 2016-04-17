@@ -87,8 +87,8 @@ class Sentence:
 			if item == i or item in i:
 				return True
 		return False
-		
-		
+
+
 
 	def __copy__(self):
 		import copy
@@ -113,7 +113,7 @@ class Sentence:
 		str(b) = 'and(or(p,q),iff(r,s))'
 		a.mapInto(b) == {'a': 'q or p', 'b':'r iff s'}
 		'''
-		
+
 		# Check that the main operators and the arity are the same
 		if other is None or self.op() != other.op() or self.arity() != other.arity():
 			return None
@@ -123,33 +123,33 @@ class Sentence:
 		for m, n in zip(self, other):
 			# For each argument, try to map it into the other argument recursively
 			mapping = m.mapInto(n)
-			
+
 			# If there is no mapping for a pair of arguments, then there is no maping at all
 			if not mapping: return None
-			
+
 			result = util.mapMerge(result, mapping)
 		return result
-	
+
 	def applyFunction(self, function, data = None):
 		args = []
 		sen = function(self, data)
 		for s in sen:
 			args.append(s.applyFunction(function, data))
 		return Sentence(sen.op(), *args)
-			
-	
+
+
 	def subsitute(self, mapping):
-		
+
 		if self in mapping:
 			return mapping[self]
-		
+
 		args = []
 		for s in self:
 			if s in mapping:
 				args.append(mapping[s])
 			else:
 				args.append(s.subsitute(mapping))
-				
+
 		sen = Sentence(self.op(), *args)
 		sen._printer = self._printer
 		return sen
@@ -219,38 +219,38 @@ class Variable(Sentence):
 
 	def __deepcopy__(self, memo):
 		return self    
-	
+
 	def op(self):
 		return self
-	
+
 	def arity(self):
 		return 0
 
 	def mapInto(self, other):
 		return {self:other}
-	
+
 	def subsitute(self, mapping):
 		return self
-	
+
 class Literal(Variable):
 	def __lt__(self, other):
 		'''
 		Vacuously false since a literal cannot be mapped except to itsself
 		'''
 		return False
-	
+
 	def __eq__(self, other):
 		'''
 		A Literal is equal if they have the same representation
 		'''
 		return str(self) == str(other)
-	
+
 	def __ne__(self, other):
 		'''
 		A Literal is equal if they have the different representation
 		'''        
 		return str(self) != str(other)	
-	
+
 	def mapInto(self, other):
 		return None	
 
@@ -286,7 +286,7 @@ if __name__ == '__main__':
 	print sen3
 	sen3.setPrinter(util.infixSentencePrinter)
 	print sen3
-	
+
 	mapIntoTest = []
 	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), C)'), util.prefixSentenceParser('or(and(P, Q), R)')))
 	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), C)'), util.prefixSentenceParser('and(and(P, Q), R)')))
@@ -294,7 +294,7 @@ if __name__ == '__main__':
 	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), A)'), util.prefixSentenceParser('or(and(P, Q), if(P,Q))')))
 	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), A)'), util.prefixSentenceParser('or(and(if(P,Q), Q), if(P,Q))')))
 	mapIntoTest.append((util.prefixSentenceParser('and(and(A, B), A)'), util.prefixSentenceParser('and(and(and(P,Q), Q), and(P,Q))')))
-	
+
 	for a,b in mapIntoTest:
 		print a, b, a.mapInto(b)
 	#import copy

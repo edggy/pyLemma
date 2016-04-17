@@ -135,7 +135,7 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 			filename = os.path.normpath(string[len(data['include']):].strip())
 			if not os.path.isabs(filename):
 				filename = os.path.join(data['path'], filename)
-				
+
 			if filename not in data['imported']:
 				with open(filename) as f:
 					for n, line in enumerate(reversed(f.read().split('\n'))):

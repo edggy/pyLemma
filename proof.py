@@ -428,19 +428,19 @@ class Proof:
 	def setPrinter(self, newPrinter):
 		'''
 		Sets the printer for this proof
-		
+
 		A printer should take in a proof and return its string representation
 		'''
 		self._printer = newPrinter
-		
+
 	def setNumbering(self, newNumbering):
 		'''
 		Sets the numbering scheme for the lines
-		
+
 		A numbering scheme should take a line number starting at 0 and return what it should look like
-		
+
 		Example:
-		
+
 		if newNumbering is 'lambda x: x+1' the numbering will start at 1 instaed of 0
 		'''
 		self._numbering = newNumbering
@@ -459,7 +459,7 @@ class Proof:
 
 	def getConclusion(self):
 		return map(lambda a: a.getSentence(), self._lines)
-	
+
 	def getInferences(self):
 		return self._inferences
 

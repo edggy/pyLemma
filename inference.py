@@ -30,25 +30,25 @@ class Inference(proof.Proof):
 		self._name = name
 		self._conclusion = conclusion
 		self._premises = set(premises)
-		
+
 		import util
 		self._printer = util.defaultInferencePrinter
 
 	def __iter__(self):
 		return InferenceIterator(self)
-	
+
 	def __str__(self):
 		return self._name + '\n' + self._printer(self)
-		
+
 	def __repr__(self):
 		return self._name + '\n' + self._printer(self)
 
 	def getPremises(self):
 		return self._premises
-	
+
 	def getConclusion(self):
 		return [self._conclusion]
-	
+
 	def isValid(self, sen, ref):
 		'''
 		Checks wheather the sentence is a valid conclusion of the references using this inference rule 
@@ -71,11 +71,11 @@ class Inference(proof.Proof):
 		#For each premise we need it to match at least one reference
 
 		mapping = self.makeMapping(conclusionMap, self._premises, senList)
-		
+
 		return (mapping is not None)
 
 
-	
+
 
 class MetaInference(proof.Proof):
 	def __init__(self, prf):
@@ -83,9 +83,8 @@ class MetaInference(proof.Proof):
 		self._printer = prf._printer
 		self._inferences = prf._inferences
 		self._proof = prf
-		
+
 	def isValid(self, sen, ref):
 		# TODO
 		raise NotImplemented
-	
-	
+
