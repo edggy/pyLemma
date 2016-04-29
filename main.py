@@ -23,12 +23,19 @@ try:
 	tstPrf = util.defaultProofParser(filename)
 	#print tstPrf
 	[tstPrf[i].setNumbering(lambda x: x+1) for i in tstPrf]
-	print tstPrf['Test Proof']
-	valid = tstPrf['Test Proof'].verify()
-	if valid > 0:
-		print 'Valid'
-	else:
-		print 'Invalid:\tError on line %d' % -valid
+	for proof in tstPrf:
+		print tstPrf[proof]
+		valid = tstPrf[proof].verify()
+		if valid > 0:
+			print 'Valid'
+		else:
+			print 'Invalid:\tError on line %d' % -valid		
+	#print tstPrf['Test Proof']
+	#valid = tstPrf['Test Proof'].verify()
+	#if valid > 0:
+		#print 'Valid'
+	#else:
+		#print 'Invalid:\tError on line %d' % -valid
 except Exception as e:
 	print e.message
 

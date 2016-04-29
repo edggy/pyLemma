@@ -37,7 +37,8 @@ class Line:
 	def __str__(self):
 		supportLines = [i()._num for i in self._support]
 		supportLines.sort()
-		lineNum = self._proof()._numbering(self._num)
+		numbering = self._proof()._numbering
+		lineNum = numbering(self._num)
 		ret = str(lineNum) + '\t' + str(self._sentence)
 		if self._inference is not None:
 			ret += '\t' + str(self._inference.name())
@@ -45,7 +46,10 @@ class Line:
 			ret += '\t' + '???'
 
 		if len(supportLines) > 0:
-			ret += '\t' + str(supportLines)[1:-1]
+			ret += '\t'
+			for supportLine in supportLines:
+				ret += str(numbering(supportLine)) + ', '
+			ret = ret[:-2]
 
 		return ret
 
