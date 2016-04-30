@@ -1,0 +1,83 @@
+include Rules/F Rules.inf
+
+proof
+Proof 1
+1	and(R, and(C, not(F)))	Assumption
+2	if(or(R, S), not(W))	Assumption
+3	R	And Elim Left	1
+4	or(R, S)	Or Intro Left	3
+5	not(W)	If Elim	2, 4
+done
+
+
+proof
+Proof 2_1
+1	and(A, D)	Assumption
+2	if(A, and(B,C))	Assumption
+3	not(C)	Assumption
+4	A	And Elim Left	1
+5	and(B,C)	If Elim	2,4
+6	C	And Elim Right	5
+7	Contradiction	Contradiction Intro	3,6
+done
+
+proof
+Proof 2
+1	if(A, and(B,C))	Assumption
+2	not(C)	Assumption
+3	|-(and(A, D), Contradiction)	Proof 2_1	1,2
+4	not(and(A, D))	Not Intro	3
+done
+
+proof
+Proof 3_1
+1	A	Assumption
+2	iff(A,B)	Assumption
+3	iff(B,C)	Assumption
+4	B	Iff Elim Left	1,2
+5	C	Iff Elim Left	3,4
+done
+
+proof
+Proof 3_2
+1	C	Assumption
+2	iff(A,B)	Assumption
+3	iff(B,C)	Assumption
+4	B	Iff Elim Right	1,3
+5	A	Iff Elim Right	2,4
+done
+
+proof
+Proof 3
+1	iff(A,B)	Assumption
+2	iff(B,C)	Assumption
+3	|-(A, C)	Proof 3_1	1,2
+4	|-(C, A)	Proof 3_2	1,2
+5	iff(A,C)	Iff Intro	3,4
+done
+
+proof
+Proof 4_1
+1	iff(F,G)	Assumption
+2	F	Assumption
+3	G	Iff Elim Left	1,2
+4	and(F, G)	And Intro	2,3
+done
+
+proof
+Proof 4_2
+1	iff(F,G)	Assumption
+2	G	Assumption
+3	F	Iff Elim Right	1,2
+4	and(F, G)	And Intro	2,3
+done
+
+proof
+Proof 4
+1	iff(F,G)	Assumption
+2	or(F,G)	Assumption
+3	|-(F, and(F,G))	Proof 4_1	1
+4	|-(G, and(F,G))	Proof 4_2	1
+n	and(F,G)	Or Elim	2,3,4
+done
+

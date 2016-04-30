@@ -29,7 +29,8 @@ try:
 		if valid > 0:
 			print 'Valid'
 		else:
-			print 'Invalid:\tError on line %d' % -valid		
+			print 'Invalid:\tError on line %d' % -valid	
+		print
 	#print tstPrf['Test Proof']
 	#valid = tstPrf['Test Proof'].verify()
 	#if valid > 0:
