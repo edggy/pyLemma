@@ -9,20 +9,43 @@ class Proof:
 	inference
 	'''	
 
-	def __init__(self, name, proofPrinter = None):
-		self._name = name
-		self._lines = []
+	def __init__(self, name, proofPrinter = None, numbering = None):
+		'''
+		@param name - The name of the proof
+		@param proofPrinter - A function to use to print the proof in the format wanted
+		'''
+		
+		# Set name to name
+		self.name = name
+		
 		if proofPrinter:
+			# Set the printer if given
 			self._printer = proofPrinter
 		else:
 			import util
+			# Use the default printer
 			self._printer = util.defaultProofPrinter		
 
+		# Initally a proof has no lines
+		# A list of the lines of the proof
+		self._lines = []
+		
+		# Initially a proof uses no inferences
+		# A dict from identifiers to inferences
 		self._inferences = {}
-		self._numbering = lambda x: x
+		
+		if numbering:
+			# Set the numbering scheme if given
+			self._numbering = numbering
+		else:
+			# Use the default numbering scheme
+			self._numbering = lambda x: x
 
 	def name(self):
-		return self._name
+		'''
+		Gets the name of the proof as a string
+		'''
+		return self.name
 
 	def addLine(self):
 		'''
@@ -30,131 +53,88 @@ class Proof:
 		'''
 		self._lines.append(line.Line(self))
 
-	def addLines(self, amount):
+	def addLines(self, amount = 1):
 		'''
 		Adds an **amount** of empty lines to the end of the proof
 		'''
 		for i in range(amount):
 			self.addLine()
 
-	def insertLine(self, index):
+	def insertLine(self, index = -1):
 		'''
-		Inserts an empty line before **index**
+		Inserts an empty line before the **index** line of the proof
 		'''
 		self._lines.insert(index, None)
 
-	def insertLines(self, index, amount):
+	def insertLines(self, index = -1, amount = 1):
 		'''
 		Adds an **amount** of empty lines before **index**
 		'''
 		for i in range(amount):
 			self._lines.insert(index + i, None)
 
-	def removeLine(self, line_num):
-		#lines.remove(line_num);
-		raise NotImplemented
+	def removeLine(self, index = -1):
+		'''
+		Deletes the line at **index** from the prooff
+		'''
+		del self._lines[index]
 
-	def removeLines(self, line_num, amount):
-		#for(int i = 0; i < amount; i++) {
-			#removeLine(line_num);
-		#}
-		raise NotImplemented
+	def removeLines(self, index = -1, amount = 1):
+		'''
+		Deletes an **amount** of empty lines at and following **index**
+		'''
+		for i in range(amount):
+			self.removeLine(index)
 
-	def setSentence(self, line_num, sen):
-		self._lines[line_num] += sen
+	def setSentence(self, sen, index = -1):
+		'''
+		Sets the sentence at **index** to **sen**
+		'''
+		self._lines[index] += sen
 
-	#@Override
-	#public void addSentences(int line_num, List<verifier.Sentence> sens) throws IndexOutOfBoundsException {
-		#int count = 0;
-		#for(verifier.Sentence sen : sens) {
-			#addSentence(line_num + count++, sen);
-		#}
-	#}
+	def getSentence(self, index):
+		'''
+		Gets the sentenced at line **index** of the proof
+		'''
+		return self._lines[index].getSentence()
 
-	def getSentence(self, line_num):
-		return self._lines[line_num].getSentence()
+	# TODO:
+	# def getSentences
+	# def removeSentence
+	# def removeSentences
 
-	#@Override
-	#public List<verifier.Sentence> getSentences(int line_num, int amount) throws IndexOutOfBoundsException {
-		#List<verifier.Sentence> ret = new LinkedList<verifier.Sentence>();
-		#List<verifier.Line> sub = lines.subList(line_num, line_num + amount);
-		#for(verifier.Line line : sub) {
-			#ret.add(line.s);
-		#}
-		#return ret;
-	#}
+	def setInference(inf, index = -1):
+		'''
+		Set the inference rule for the line at **index**
+		
+		@param inf - The inference rule to add
+		@param index - The line number to set the infrence of
+		'''
+		self._lines += inf
+		
+	# TODO:
+	# def addInference
+	# def getInference
+	# def removeInference
 
-	#@Override
-	#public void removeSentence(int line_num) throws IndexOutOfBoundsException {
-		#lines.get(line_num).s = null;
-	#}
+	def addSupport(ref, index = -1):
+		'''
+		Adds a support to the line at **index**
+		
+		@param ref - Either a line number or a line object
+		'''
+		self._lines += inf
 
-	#@Override
-	#public void removeSentences(int line_num, int amount) throws IndexOutOfBoundsException {
-		#for(int i = 0; i < amount; i++) {
-			#removeSentence(line_num + i);
-		#}
-	#}
-
-	def setInference(line_num, inf):
-		raise NotImplemented
-	#@Override
-	#public void addInference(int line_num, verifier.Inference inf) throws IndexOutOfBoundsException {
-		#lines.get(line_num).i = inf;
-
-	#}
-
-	#@Override
-	#public verifier.Inference getInference(int line_num) throws IndexOutOfBoundsException {
-		#return lines.get(line_num).i;
-
-	#}
-
-	#@Override
-	#public void removeInference(int line_num) throws IndexOutOfBoundsException {
-		#lines.get(line_num).i = null;
-	#}
-
-	def addSupport(line_num, ref):
-		raise NotImplemented
-		#if not isinstance(ref, Line):
-		#	ref = self._lines[ref]
-		#self._lines[line_num].addSupport(ref)
-
-	#@Override
-	#public void addReference(int line_num, verifier.Reference ref) throws IndexOutOfBoundsException {
-		#Line curLine = lines.get(line_num);
-		#if(curLine.r == null) curLine.r = ref;
-		#curLine.r.addReferences(ref.getReference());
-	#}
-
-	#@Override
-	#public void addReference(int line_num, int ref_line) throws IndexOutOfBoundsException {
-		#verifier.Reference ref = new Reference();
-		#ref.addReference(lines.get(ref_line));
-
-		#addReference(line_num, ref);
-	#}
-
-	#@Override
-	#public verifier.Reference getReference(int line_num) throws IndexOutOfBoundsException {
-		#return lines.get(line_num).r;
-	#}
-
-	#public void removeReference(int line_num, int ref_line) throws IndexOutOfBoundsException {
-		#verifier.Reference curRef = lines.get(line_num).r;
-		#if(curRef == null) return;
-		#curRef.removeReference(lines.get(ref_line));
-	#}
-
-	#@Override
-	#public void removeReferences(int line_num) throws IndexOutOfBoundsException {
-		#lines.get(line_num).r = null;
-	#}
+	# TODO:
+	# def addReference
+	# def getReference
+	# def removeReference
 
 	def verify(self):
 		'''
 		Verifies that the current proof is valid, i.e. each line validly follows from the previous lines
+		
+		@return - True if the proof is valid, otherwise the line number of the first invalid line
 		'''
 
 		# Assume there are no errors
@@ -202,21 +182,23 @@ class Proof:
 			line._num = line_num
 
 
-		# If there are no errors, return 1
+		# If there are no errors, return True
 		if err_line is None:		
-			return 1
+			return True
 
 		# Since this is an invalid proof, first set all the line numbers to None
 		for line in self._lines:
 			line._num = None
 
-		# Then return -err_line, so the user can debug
-		return -err_line
+		# Then return err_line, so the user can debug
+		return self._numbering(err_line)
 
 	def isValid(self, sen, ref):
 		'''
 		Given a sentence and a set of reference lines, check that this proof proves 
 		that the sentence is deductively follows from the reference lines
+		
+		@return - True iff the proof proves that given sentence 
 		'''
 
 		# Check that this proof is valid, if it is not then we canot check anything
@@ -227,14 +209,6 @@ class Proof:
 		refSenList = []
 		for r in ref:
 			refSenList.append(r().getSentence())
-
-
-		# for each reference try to match it to an assumption
-		#for curRef in refSenList:
-			#for curPrem in self.getPremises():
-				#curSen = s.getSentence()
-				## Check if the curent premise can map into the current reference
-				#conclusionMap = curPrem.mapInto(r)
 
 		premises = self.getPremises()
 
@@ -267,9 +241,9 @@ class Proof:
 		'''
 		Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
 
-		conclusionMap - The current mapping of variables into sentences
-		premises - A list of premises
-		sentences - A list of sentences to be mapped into
+		@param conclusionMap - The current mapping of variables into sentences
+		@param premises - A list of premises
+		@param sentences - A list of sentences to be mapped into
 		'''
 		# If there are no premises, there is nothing else to map
 		if premises is None or len(premises) == 0:
@@ -281,8 +255,10 @@ class Proof:
 
 		from collections import deque
 
+		# Add all the premises to the queue
 		premiseQueue = deque(premises)
 
+		# Call the makeMappingHelper that will recursively find a mapping
 		return self.makeMappingHelper(conclusionMap, premiseQueue, sentences)	
 
 
@@ -295,11 +271,6 @@ class Proof:
 		sentences - A list of sentences to be mapped into
 		'''	
 
-		#print conclusionMap, premiseQueue, sentences
-		#print premiseQueue.pop()
-		# Base case, the queue is empty
-		#if premiseQueue.empty():
-		#	return conclusionMap
 		try:
 			# Get the first premise
 			curPrem = premiseQueue.pop()
@@ -308,11 +279,9 @@ class Proof:
 			return conclusionMap
 
 		for curSen in sentences:
-			#print 'curPrem =', curPrem
-			#print 'curSen =', curSen
 			# Try find a mapping of curPrem into curSen
 			mapping = curPrem.mapInto(curSen)
-			#print 'mapping =', mapping
+			
 			if mapping:
 				# If a mapping exists
 				import util
@@ -411,7 +380,7 @@ class Proof:
 		return self._printer(self)		
 
 	def __repr__(self):
-		return self._name + '\n' + self._printer(self)
+		return self.name + '\n' + self._printer(self)
 
 	def __iadd__(self, value):
 		from inference import Inference
@@ -420,7 +389,7 @@ class Proof:
 			self._inferences[value.name()] = value
 		elif isinstance(value, str):
 			# If we are given a string, look it up in our inference map
-			value = self._inferences[value]		
+			value = self._inferences[value]
 		self.addLine()
 		self._lines[-1] += value
 		return self

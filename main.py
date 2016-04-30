@@ -20,25 +20,25 @@ if not os.path.isfile(filename):
 
 
 try:
+	# parse the supplied file
 	tstPrf = util.defaultProofParser(filename)
-	#print tstPrf
+	
+	# Set the line numbering to start at 1 (instead of the default 0)
 	[tstPrf[i].setNumbering(lambda x: x+1) for i in tstPrf]
+	
 	for proof in tstPrf:
+		# Print each proof that was parsed
 		print tstPrf[proof]
+		
+		# Check that it is valid
 		valid = tstPrf[proof].verify()
-		if valid > 0:
+		if valid:
+			# If it is valid, print it
 			print 'Valid'
 		else:
-			print 'Invalid:\tError on line %d' % -valid	
+			# If it is not valid, print the line number of the error
+			print 'Invalid:\tError on line %d' % valid	
 		print
-	#print tstPrf['Test Proof']
-	#valid = tstPrf['Test Proof'].verify()
-	#if valid > 0:
-		#print 'Valid'
-	#else:
-		#print 'Invalid:\tError on line %d' % -valid
+		
 except Exception as e:
 	print e.message
-
-#for i in tstPrf:
-	#print str(tstPrf[i].verify()) + ': ' + repr(tstPrf[i])
