@@ -48,9 +48,9 @@ class Line:
 			infs = self._proof()._inferences
 			
 			# Check to see if it is in the proof's inference dict
-			if other.name() not in infs:
+			if other.name not in infs:
 				# If it is new, add it to the dict
-				infs[other.name()] = other
+				infs[other.name] = other
 				
 			# set the inference
 			self.setInference(other)
@@ -80,7 +80,7 @@ class Line:
 		
 		if self._inference is not None:
 			# If the inference is set then add it's name
-			ret += '\t' + str(self._inference.name())
+			ret += '\t' + str(self._inference.name)
 		else:
 			# Otherwise add ??? to denote it has not been set
 			ret += '\t' + '???'

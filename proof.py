@@ -384,9 +384,9 @@ class Proof:
 
 	def __iadd__(self, value):
 		from inference import Inference
-		if isinstance(value, Inference) and value.name() not in self._inferences:
+		if isinstance(value, Inference) and value.name not in self._inferences:
 			# If we are given an inference not in our map, add it to our map
-			self._inferences[value.name()] = value
+			self._inferences[value.name] = value
 		elif isinstance(value, str):
 			# If we are given a string, look it up in our inference map
 			value = self._inferences[value]

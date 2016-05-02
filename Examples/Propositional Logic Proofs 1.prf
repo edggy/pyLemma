@@ -80,4 +80,3 @@ Proof 4
 4	|-(G, and(F,G))	Proof 4_2	1
 n	and(F,G)	Or Elim	2,3,4
 done
-

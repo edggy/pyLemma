@@ -150,7 +150,7 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 		# We are in the inference parsing state
 		if string == 'done':
 			inf = inferenceParser(data['curInf'], sentenceParser)
-			data['infs'][inf.name()] = inf
+			data['infs'][inf.name] = inf
 			data['curInf'] = None
 			data['state'] = None
 			return
@@ -274,7 +274,7 @@ def defaultProofPrinter(p, printedInferences = set([])):
 			res += str(inferences[inf]) + '\n\n'
 			printedInferences.add(inf)
 
-	res += 'proof\n' + p.name() + '\n'
+	res += 'proof\n' + p.name + '\n'
 	for n, i in enumerate(p):
 		i._num = n
 		res += str(i) + '\n'

@@ -1,0 +1,16 @@
+include Rules/F Rules.inf
+
+proof
+com_and_1
+1	and(A,B)	Assumption
+2	A	And Elim Left	1
+3	B	And Elim Right	1
+4	and(B,A)	And Intro	2,3
+done
+
+proof
+com_and
+1	|-(and(A,B), and(B,A))	com_and_1
+2	|-(and(B,A), and(A,B))	com_and_1
+3	iff(and(A,B),and(B,A))	Iff Intro	1,2
+done
