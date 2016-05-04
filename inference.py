@@ -27,7 +27,7 @@ class InferenceIterator:
 
 class Inference(proof.Proof):
 	def __init__(self, name, conclusion = None, premises = None):
-		self._name = name
+		self.name = name
 		self._conclusion = conclusion
 		self._premises = set(premises)
 
@@ -38,10 +38,10 @@ class Inference(proof.Proof):
 		return InferenceIterator(self)
 
 	def __str__(self):
-		return self._name + '\n' + self._printer(self)
+		return self.name + '\n' + self._printer(self)
 
 	def __repr__(self):
-		return self._name + '\n' + self._printer(self)
+		return self.name + '\n' + self._printer(self)
 
 	def getPremises(self):
 		return self._premises

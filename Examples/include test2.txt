@@ -1,0 +1,3 @@
+include Rules/F Rules.inf
+
+include include test2.txt
