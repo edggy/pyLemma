@@ -38,7 +38,7 @@ try:
 		else:
 			# If it is not valid, print the line number of the error
 			print 'Invalid:\tError on line %d' % valid	
-		print
-		
-except Exception as e:
+			print
+			
+except util.LineError as e:
 	print e.message

@@ -1,5 +1,9 @@
+from collections import deque
 
+import inference
+import sentence
 import line
+import util
 
 class Proof:
 	'''
@@ -22,7 +26,6 @@ class Proof:
 			# Set the printer if given
 			self._printer = proofPrinter
 		else:
-			import util
 			# Use the default printer
 			self._printer = util.defaultProofPrinter		
 
@@ -253,8 +256,6 @@ class Proof:
 		if (exact and len(premises) != len(sentences)) or len(premises) > len(sentences):
 			return None
 
-		from collections import deque
-
 		# Add all the premises to the queue
 		premiseQueue = deque(premises)
 
@@ -284,7 +285,6 @@ class Proof:
 			
 			if mapping:
 				# If a mapping exists
-				import util
 
 				# try to merge this mapping into conclusionMap
 				merge = util.mapMerge(conclusionMap, mapping)
@@ -292,7 +292,7 @@ class Proof:
 				if merge:
 					# If the merge is successful recursively call makeMappingHelper for the merged map, and the remainder of the premiseQueue
 					remainder = self.makeMappingHelper(merge, premiseQueue, sentences)
-					#print 'remainder =', remainder
+					
 					if remainder:
 						# If we can map the remaining premises, this is a valid mapping, return it
 						return remainder
@@ -303,50 +303,6 @@ class Proof:
 
 		# There is no valid mapping
 		return None	
-	#@Override
-	#public int length() {
-		#return lines.size();
-	#}
-
-	#@Override
-	#public int size() {
-		#return lines.size();
-	#}
-
-	#@Override
-	#public verifier.Line getLine(int line_num) throws IndexOutOfBoundsException{
-		#return lines.get(line_num);
-	#}
-
-	#@Override
-	#public List<verifier.Line> getLines() {
-		#return new ArrayList<verifier.Line>(lines);
-	#}
-
-	#@Override
-	#public List<verifier.Line> getLines(int line_num, int amount) throws IndexOutOfBoundsException {
-		#List<verifier.Line> l = new ArrayList<verifier.Line>();
-		#for(int i = line_num; i < amount; i++) {
-			#l.add(lines.get(i));
-		#}
-		#return l;
-	#}
-
-	#@Override
-	#public Line getLastLine() {
-		#return lines.get(lines.size()-1);
-	#}
-
-	#@Override
-	#public String toString() {
-		#String res = "";
-		#int lineNum = 1;
-		#for(Line l : lines) {
-			#l.number = lineNum++;
-			#res += l + "\n";
-		#}
-		#return res.substring(0, res.length() - 1);
-	#}
 
 	def __len__(self):
 		'''
@@ -359,18 +315,10 @@ class Proof:
 		return self._lines[key]
 
 	def __setitem__(self, key, value):
-
 		self._lines[key] = value
 
-		'''if isinstance(value, Sentence):
-			self.setSentence(key, value)
-		elif isinstance(value, Inference):
-			self.setInference(key, value)
-		else:
-			self.addSupport(key, value)'''
-
-
 	def __iter__(self):
+		# An interator of a proof is an iterator of it's lines
 		return iter(self._lines)
 
 	def __reversed__(self):
@@ -383,8 +331,8 @@ class Proof:
 		return self.name + '\n' + self._printer(self)
 
 	def __iadd__(self, value):
-		from inference import Inference
-		if isinstance(value, Inference) and value.name not in self._inferences:
+		
+		if isinstance(value, inference.Inference) and value.name not in self._inferences:
 			# If we are given an inference not in our map, add it to our map
 			self._inferences[value.name] = value
 		elif isinstance(value, str):
@@ -415,21 +363,38 @@ class Proof:
 		self._numbering = newNumbering
 
 	def getPremises(self):
+		'''
+		Returns a list of premises this proof assumes
+		
+		@return - A set of sentences containing the premises
+		'''
 		# Check if s is an assumption
-		#if len(curInf.getPremises()) == 0 and conclusion <= Variable():
-		from sentence import Variable
-		prems = []
+		prems = set([])
 		for l in self._lines:
 			inf = l.getInference()
-			if len(inf.getPremises()) == 0 and len(inf.getConclusion()) == 1 and inf.getConclusion()[0] <= Variable():
-				prems.append(l.getSentence())
+			# An inference rule is an assumption iff it has no premises, has exactly one conclusion,
+			# and its conclusion can be mapped into a variable
+			#
+			# ---
+			# A
+			if len(inf.getPremises()) == 0 and len(inf.getConclusion()) == 1 and inf.getConclusion()[0] <= sentence.Variable():
+				prems.add(l.getSentence())
 		return prems
-		#return filter(lambda a: a,map(lambda a: a.getSentence(), self._lines))
 
 	def getConclusion(self):
+		'''
+		Gets the conclusions of this proof
+	
+		@return - A list containing the conclusions
+		'''		
 		return map(lambda a: a.getSentence(), self._lines)
 
 	def getInferences(self):
+		'''
+		Gets the inference rules used in this proof
+		
+		@return - A dict of inferece rule names to the associated inference rule
+		'''
 		return self._inferences
 
 
