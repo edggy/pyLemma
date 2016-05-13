@@ -1,5 +1,6 @@
+import weakref
+
 import sentence
-#import inference
 import proof
 
 class Line:
@@ -8,8 +9,6 @@ class Line:
 	'''
 
 	def __init__(self, proof):
-		import weakref
-		
 		# The proof that this line is in as a weak ref
 		self._proof = weakref.ref(proof)
 		
@@ -104,37 +103,55 @@ class Line:
 		'''
 		Set the sentence of this line
 		'''
-		# Reset the line number. Used for verification
+		# Reset the line number since the line has chaged. Used for verification caching
 		self._num = None
 		
 		# set the sentence
 		self._sentence = sen
 
 	def getSentence(self):
+		'''
+		Gets the sentence of this line
+		'''
 		return self._sentence
 
 	def setInference(self, inf):
+		'''
+		Set the inference rule that this line uses
+		'''
+		# Reset the line number since the line has chaged. Used for verification caching
 		self._num = None
 		self._inference = inf
 
 	def getInference(self):
+		'''
+		Get the inference rule that this line uses
+		'''		
 		return self._inference
 
 	def addSupport(self, line):
-		import weakref
-		# Reset the line number. Used for verification
+		'''
+		Adds another line as a supporting line
+		'''
+		# Reset the line number since the line has chaged. Used for verification caching
 		self._num = None
 		
 		# Add the lines as a weak reference
 		self._support.add(weakref.ref(line))
 
 	def discardSuppprt(self, line):
-		# Reset the line number. Used for verification
+		'''
+		Removes another line as a supporting line
+		'''		
+		# Reset the line number since the line has chaged. Used for verification caching
 		self._num = None
 		
 		# discard the line from the set
 		self._support.discard(line)
 
 	def getSuppprt(self):
+		'''
+		Returns the set of support steps
+		'''
 		return self._support
 

@@ -247,6 +247,8 @@ class Proof:
 		@param conclusionMap - The current mapping of variables into sentences
 		@param premises - A list of premises
 		@param sentences - A list of sentences to be mapped into
+		
+		@return - A map of subsitutions of variables in premises that will make premises match all the sentences
 		'''
 		# If there are no premises, there is nothing else to map
 		if premises is None or len(premises) == 0:
@@ -266,10 +268,10 @@ class Proof:
 	def makeMappingHelper(self, conclusionMap, premiseQueue, sentences):
 		'''
 		Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
-
-		conclusionMap - The current mapping of variables into sentences
-		premiseQueue - A queue of the premises
-		sentences - A list of sentences to be mapped into
+		@param conclusionMap - The current mapping of variables into sentences
+		@param premiseQueue - A queue of the premises
+		@param sentences - A list of sentences to be mapped into
+		@return - A map of subsitutions of variables in premises that will make premises match all the sentences
 		'''	
 
 		try:
@@ -312,26 +314,42 @@ class Proof:
 		return len(self._lines)
 
 	def __getitem__(self, key):
+		'''
+		Gets the specified line of the proof
+		'''
 		return self._lines[key]
 
 	def __setitem__(self, key, value):
+		'''
+		Sets the specified line of the proof
+		'''		
 		self._lines[key] = value
 
 	def __iter__(self):
-		# An interator of a proof is an iterator of it's lines
+		'''
+		An interator of a proof is an iterator of it's lines
+		'''
 		return iter(self._lines)
 
 	def __reversed__(self):
+		'''
+		The lines of the proof starting from the end
+		'''
 		return reversed(self._lines)
 
 	def __str__(self):
+		'''
+		Prints the proof using the supplied printer
+		'''
 		return self._printer(self)		
 
 	def __repr__(self):
 		return self.name + '\n' + self._printer(self)
 
 	def __iadd__(self, value):
-		
+		'''
+		Adds lines to the proof
+		'''
 		if isinstance(value, inference.Inference) and value.name not in self._inferences:
 			# If we are given an inference not in our map, add it to our map
 			self._inferences[value.name] = value
@@ -386,7 +404,9 @@ class Proof:
 		Gets the conclusions of this proof
 	
 		@return - A list containing the conclusions
-		'''		
+		'''
+		
+		# Every line is a valid conclusion
 		return map(lambda a: a.getSentence(), self._lines)
 
 	def getInferences(self):
@@ -399,30 +419,5 @@ class Proof:
 
 
 if __name__ == '__main__':
-	import util
-	import inference
-
-	p = Proof()
-	p += util.prefixSentenceParser('if(a,or(b,a))')
-	p += util.prefixSentenceParser('a')
-	p += util.prefixSentenceParser('or(b,a)')
-	#print p
-	p[2] += p[0]
-	p[2] += p[1]
-	#p.__setitem__(1, p.__getitem__(1).__iadd__(p.__getitem__(0)))
-	#print p[1]
-	#print
-	print p
-
-	assumption = util.defaultInferenceParser('assumption\na')
-
-	mp = util.defaultInferenceParser('MP\nP\nif(P,Q)\nQ')
-	mp.setPrinter(util.defaultInferencePrinter)
-	print mp
-	#p.__setitem__(1, p.__getitem__(1).__iadd__(??))
-	p[0] += assumption
-	p[1] += 'assumption'
-	p[2] += mp
-	print p
-	print p.isValid()
+	# This area used for debugging
 

@@ -1,10 +1,8 @@
-#import proof
-
 import util
 import sys
 
 import os.path
-#"Examples\Excluded Middle.prf"
+
 filename = ''
 if len(sys.argv) > 1:
 	filename = sys.argv[1]
@@ -15,7 +13,9 @@ if not os.path.isfile(filename):
 		import easygui
 		filename = easygui.fileopenbox()
 	except ImportError, e:
+		print 'Usage %s [filename]'
 		print 'Install easygui for a file selcct dialog box or add a command line argument for the file you want to check'
+		print 'The pip command is "python -m pip install easygui"'
 
 
 

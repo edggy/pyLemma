@@ -1,6 +1,13 @@
 import proof
 
 class InferenceIterator:
+	'''
+	An iterator that goes through each premise and the conclusion of the inference.
+	
+	Note: 
+	The premises may appear in any order
+	The conclusion is always last
+	'''
 	def __init__(self, inf):
 		# Keep track of the conclusion and an iterator of the premises
 		self._conclusion = inf._conclusion
@@ -63,9 +70,9 @@ class Inference(proof.Proof):
 
 	def getConclusion(self):
 		'''
-		Gets the conclusion of this inference rule
+		Gets the conclusions of this inference rule
 		
-		@return - A list containing the conclusion of this inference rule
+		@return - A list containing the conclusions of this inference rule
 		'''
 		return [self._conclusion]
 
@@ -89,22 +96,9 @@ class Inference(proof.Proof):
 			senList.append(r().getSentence())
 
 		#For each premise we need it to match at least one reference
-
 		mapping = self.makeMapping(conclusionMap, self._premises, senList)
 
+		# Return if a mapping exists
 		return (mapping is not None)
 
-
-
-
-class MetaInference(proof.Proof):
-	def __init__(self, prf):
-		self._lines = prf._lines
-		self._printer = prf._printer
-		self._inferences = prf._inferences
-		self._proof = prf
-
-	def isValid(self, sen, ref):
-		# TODO
-		raise NotImplemented
 
