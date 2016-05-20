@@ -420,4 +420,4 @@ class Proof:
 
 if __name__ == '__main__':
 	# This area used for debugging
-
+	pass

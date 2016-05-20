@@ -1,6 +1,15 @@
+import copy
+
+import util
+
+
 class SentenceIterator:
 	def __init__(self, sen):
+		
+		# The sentence to iterate over
 		self._sen = sen
+		
+		# Start at the beginning
 		self._index = 0
 
 	def __iter__(self):
@@ -15,31 +24,52 @@ class SentenceIterator:
 			raise StopIteration
 
 class Sentence:
+	'''
+	A  finite sequence of symbols from a given alphabet that is part of a formal language
+	
+	Contains an operator and some number of arguments
+	'''
 	def __init__(self, op, *args):
+		
+		# _op is the operator
 		self._op = op
+		
+		# _args is a tuple of arguments
 		self._args = args
-		self._printer = None
+		
+		# Use the default printer by default
+		self._printer = util.prefixSentencePrinter
 
 	def __repr__(self):
 		return str(self)
 
 	def __str__(self):
-		if self._printer == None:
-			from util import prefixSentencePrinter
-			self._printer = prefixSentencePrinter
-		return self._printer(self)
+		try:
+			# Try to use the printer to print the sentence
+			return self._printer(self)
+		except TypeError:
+			return ''
 
 	def __lt__(self, other):
-		return self.mapInto(other) is not None
+		'''
+		A sentence is less than another sentence if there exists a mapping of variables to sentences such that
+		when you make the subsitution in the smaller sentence it equals the larger sentence and the larger 
+		sentence cannot be mapped into the smaller one
+		'''
+		return self <= other and other.mapInto(self) is None
 
 	def __le__(self, other):
-		return self == other or self < other
+		'''
+		A sentence is less than or equal to another sentence if there exists a mapping of variables to sentences such that
+		when you make the subsitution in the smaller sentence it equals the larger sentence
+		'''		
+		return self.mapInto(other) is not None
 
 	def __eq__(self, other):
 		'''
 		Two sentences are equal iff their hashes are equal
 		'''
-		return hash(self) == hash(other)
+		return self._op == other._op and self._args == other._args
 
 	def __ne__(self, other):
 		'''
@@ -62,8 +92,7 @@ class Sentence:
 		return other <= self
 
 	def __hash__(self):
-		# TODO: Make better hash
-		return hash(str(self))
+		return hash((self._op, self._args))
 
 	def __len__(self):
 		'''
@@ -91,17 +120,26 @@ class Sentence:
 
 
 	def __copy__(self):
-		import copy
+		# Make a shallow copy of the operator
 		newOp = copy.copy(self._op)
-		newArgs = copy.copy(self._args)
+		
+		# Make a shallow copy of the arguments
+		newArgs = tuple(self._args)
 
-		return sentence(newOp, *newArgs)    
+		ret = Sentence(newOp, *newArgs)    
+		ret.setPrinter(self._printer)
+		return ret
 
 	def __deepcopy__(self, memo):
-		import copy
+		# Make a deep copy of the operator
 		newOp = copy.deepcopy(self._op)
-		newArgs = copy.deepcopy(self._args)
-		return sentence(newOp, *newArgs)
+		
+		# Make a deep copy of each of the arguments
+		newArgs = tuple([copy.deepcopy(i) for i in self._args])
+		
+		ret = Sentence(newOp, *newArgs)
+		ret.setPrinter(self._printer)
+		return ret	
 
 	def mapInto(self, other):
 		'''
@@ -119,7 +157,6 @@ class Sentence:
 			return None
 
 		result = {}
-		import util
 		for m, n in zip(self, other):
 			# For each argument, try to map it into the other argument recursively
 			mapping = m.mapInto(n)
@@ -131,42 +168,81 @@ class Sentence:
 		return result
 
 	def applyFunction(self, function, data = None):
+		'''
+		Apply a function recursively to this sentence and each of its arguments
+		
+		@param function - A function that takes 2 arguments, a sentence and a data object and returns a sentence
+		@return - A new sentence of the funcion being applied to the original
+		'''
 		args = []
+		# Apply the function to this sentence
 		sen = function(self, data)
+		
 		for s in sen:
+			# Apply the function recursively to each of the arguments
 			args.append(s.applyFunction(function, data))
-		return Sentence(sen.op(), *args)
+			
+		# Return a new sentence after the function has been applied
+		ret = Sentence(sen.op(), *args)
+		ret.setPrinter(self._printer)
+		return ret
 
 
 	def subsitute(self, mapping):
-
+		'''
+		Makes a subsitution recursively
+		
+		@param mapping - The substitutions to be applied
+		@return - A new sentence with all the substitutions made
+		'''
+		
+		# TODO: use the applyFunction method
+		
+		# Base case: check if this sentence is in the mapping, if so we are done
 		if self in mapping:
 			return mapping[self]
 
 		args = []
 		for s in self:
+			# For each argument in self, check if it is in the mapping
 			if s in mapping:
+				# If it is, make the subsitution
 				args.append(mapping[s])
 			else:
+				# If it is not, recursively make more subsitutions
 				args.append(s.subsitute(mapping))
 
 		sen = Sentence(self.op(), *args)
-		sen._printer = self._printer
+		sen.setPrinter(self._printer)
 		return sen
 
 	def op(self):
+		'''
+		Gets the main operator of this sentence
+		'''
 		return self._op
 
 	def setPrinter(self, printer):
+		'''
+		Sets the printer for this sentence and its arguments
+		'''
 		self._printer = printer
 		for arg in self:
 			arg.setPrinter(printer)
 
 	def arity(self):
+		'''
+		Gets the arity of the main operator i.e. the number of arguments
+		'''
 		return len(self._args)
 
 class Variable(Sentence):
+	'''
+	A variable is a placeholder in a sentence that matches any sentence or wff
+	'''
+	
 	def __init__(self, name = 'A'):
+		# The name of the variable, same named variables are considered to be the same variable
 		self._name = ''.join(str(name).split())
 
 	def __repr__(self):
@@ -177,27 +253,34 @@ class Variable(Sentence):
 
 	def __lt__(self, other):
 		'''
-		Vacuously true since {self: other} is always a valid mapping
+		A variable is less than a sentence as long as the sentecne cannot be mapped into a variable
 		'''
-		return True
+		
+		#Ensure other is not a variable
+		return other.mapInto(self) is None
 
 	def __le__(self, other):
 		'''
-		Vacuously true since {self: other} is always a valid mapping
+		A variable is always less than or equal to another sentence
 		'''        
+		# Vacuously true since {self: other} is always a valid mapping
 		return True
 
 	def __eq__(self, other):
 		'''
 		A variable is equal to other if other is not a variable or they share the same representation
 		'''
-		return not isinstance(other, Variable) or str(self) == str(other)
+		
+		# Something is a variable if it is less than or equal to a variable
+		return not other <= self or str(self) == str(other)
 
 	def __ne__(self, other):
 		'''
 		A variable is not equal to other if other is a variable and they dont share the same representation
-		'''        
-		return isinstance(other, Variable) and str(self) != str(other)
+		'''     
+		
+		# Something is a variable if it is less than or equal to a variable
+		return other <= self and str(self) != str(other)
 
 	def __hash__(self):
 		return hash(self._name)
@@ -206,19 +289,23 @@ class Variable(Sentence):
 		return 1
 
 	def __getitem__(self, key):
+		# Variables have no arguments
 		raise IndexError
 
 	def __iter__(self):
 		return SentenceIterator(self)
 
 	def __contains__(self, item):
+		# Variables contain no arguments
 		return False
 
 	def __copy__(self):
+		# A copy of a variable is itseelf
 		return self
 
 	def __deepcopy__(self, memo):
-		return self    
+		# A deep copy of a variable is itseelf
+		return Variable(self._name)
 
 	def op(self):
 		return self
@@ -233,17 +320,23 @@ class Variable(Sentence):
 		return self
 
 class Literal(Variable):
+	'''
+	A literal is the smallest sentence
+	'''
 	def __lt__(self, other):
 		'''
 		Vacuously false since a literal cannot be mapped except to itsself
 		'''
 		return False
+	
+	def __le__(self, other):
+		return self < other or self == other
 
 	def __eq__(self, other):
 		'''
 		A Literal is equal if they have the same representation
 		'''
-		return str(self) == str(other)
+		return str(self._name) == str(other)
 
 	def __ne__(self, other):
 		'''
@@ -258,116 +351,5 @@ class InvalidSentenceError(Exception):
 	pass
 
 if __name__ == '__main__':
-	def infix(sen):
-		if isinstance(sen, Variable):
-			return str(sen)
-		try:
-			first = infix(sen[0])
-		except IndexError:
-			first = str(sen)
-		second = str(sen.op())
-		try:
-			third = infix(sen[1])
-		except IndexError:
-			third = str(sen)
-		return '(' + first + ' ' + second + ' ' + third + ')'
-
-	import util
-
-	a = Variable('A')
-	b = Variable('B')
-	c = Variable('C')
-	sen = Sentence('&', a, b)
-	sen2 = Sentence('|', sen, c)
-	print sen
-	print sen2
-	print infix(sen2)
-	sen3 = util.prefixSentenceParser('or(and(A, B), C)')
-	print sen3
-	sen3.setPrinter(util.infixSentencePrinter)
-	print sen3
-
-	mapIntoTest = []
-	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), C)'), util.prefixSentenceParser('or(and(P, Q), R)')))
-	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), C)'), util.prefixSentenceParser('and(and(P, Q), R)')))
-	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), C)'), util.prefixSentenceParser('or(and(P, Q), if(P,Q))')))
-	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), A)'), util.prefixSentenceParser('or(and(P, Q), if(P,Q))')))
-	mapIntoTest.append((util.prefixSentenceParser('or(and(A, B), A)'), util.prefixSentenceParser('or(and(if(P,Q), Q), if(P,Q))')))
-	mapIntoTest.append((util.prefixSentenceParser('and(and(A, B), A)'), util.prefixSentenceParser('and(and(and(P,Q), Q), and(P,Q))')))
-
-	for a,b in mapIntoTest:
-		print a, b, a.mapInto(b)
-	#import copy
-	#print copy.copy(sen2)
-	#print copy.deepcopy(sen2)
-
-'''
-package verifier.impl;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import verifier.Sentence;
-import verifier.Variable;
-
-public abstract class AbstractSentence implements Sentence {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1324374494088588165L;
-
-	public abstract Sentence clone();
-
-	@Override
-	public Map<verifier.Variable, Sentence> mapInto(verifier.Sentence sen) {
-		// TODO Auto-generated method stub
-		Map<verifier.Variable, Sentence> result = new HashMap<verifier.Variable, Sentence>();
-		if(this instanceof verifier.Variable) {
-			result.put((Variable) this, sen);
-			return result;
-		}
-		if(getOperator() != null) {
-			if(!getOperator().equals(sen.getOperator())) return null;
-		}
-		else if(sen.getOperator() != null) return null;
-		if(this.parts().size() != sen.parts().size()) return null;
-		Iterator<Sentence> thisPartsi = this.parts().iterator();
-		Iterator<Sentence> senPartsi = sen.parts().iterator();
-		while(thisPartsi.hasNext() && senPartsi.hasNext()) {
-			Sentence thisPart = thisPartsi.next();
-			Sentence senPart = senPartsi.next();
-			Map<verifier.Variable, Sentence> m = thisPart.mapInto(senPart);
-			if(m == null) return null;
-			result = Util.mapMerge(result, m);
-			if(result == null) return null;
-		}
-		return result;
-	}
-
-	@Override
-	public boolean canMapInto(verifier.Sentence sen) {
-		return mapInto(sen) != null;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if(!(o instanceof Sentence)) return false;
-		Sentence s = (Sentence)o;
-		if(this.getOperator() == null) {
-			if(s.getOperator() != null) return false;
-		}
-		else {
-			if(!this.getOperator().equals(s.getOperator())) {
-				return false;
-			}
-		}
-		return this.parts().equals(s.parts());
-	}
-
-	@Override
-	public int hashCode() {
-		return this.toString().hashCode();
-	}
-}
-'''
+	# This area used for debugging
+	pass
