@@ -1,4 +1,12 @@
 def prefixSentenceParser(string, variable = True):
+	'''
+	Parses a sentence from its prefix form
+	
+	@param string - A string representation of a sentence
+	@param variable - Should we treat base components as variables (True) or literals (False)
+	
+	@return - A sentence parsed from the string
+	'''
 	from sentence import Sentence
 	from sentence import Variable
 	from sentence import Literal
@@ -8,12 +16,14 @@ def prefixSentenceParser(string, variable = True):
 		init = Variable
 	else:
 		init = Literal
-	# string = 'or(and(A, B), C)'
-
+		
 	# Remove all the whitespace in the string
 	string = "".join(string.split())
 
-	parenCount = len(string.replace('(', '')) - len(string.replace(')', ''))
+	# Count the difference in the number of open and close parenthesis
+	parenCount = string.count('(') - string.count(')')
+	
+	# raise error if they are unequal
 	if parenCount > 0:
 		raise InvalidSentenceError('Unmatched Close Parenthesis')
 	elif parenCount < 0:
@@ -28,19 +38,31 @@ def prefixSentenceParser(string, variable = True):
 		return init(string)
 
 	elif firstP == 0:
-		# if the open paren is the first character, then this is also a variable surrounded by parens
-		# '(A)'
+		# Count the commas
+		commaCount = string.count(',')
+		if commaCount == 0:
+			# if the open paren is the first character, then this is also a variable surrounded by parens
+			# '(A)'
+	
+			return init(string[1:-1])
+		
+		# If there are commas, then it is a sentence with no operator
+		op = None
+	else:
+		# the operator is everthing before the first open paren
+		op = Literal(string[:firstP])
 
-		return init(string[1:-1])
-
-	# the operator is everthing before the first open paren
-	op = Literal(string[:firstP])
-
-	# take the operator and its parens out of the string
-	string = string[firstP+1:-1]
+	# Find the last close paren
+	lastP = string.rfind(')')
+	
+	# take the operator and its parens out of the string, anything after the last paren is ignored
+	string = string[firstP+1:lastP]
+	
+	# Split the arguments into tokens
 	tokens = string.split(',')
+	
 	if len(tokens) == 1:
-		# No commas
+		# No commas, one argument
 		var = init(string)
 		return Sentence(op, var)
 
@@ -57,7 +79,7 @@ def prefixSentenceParser(string, variable = True):
 			# If it is add it to the end
 			cumStr += part
 		else:
-			# Otherwise seperate it with a comma and then add ir
+			# Otherwise seperate it with a comma and then add it
 			cumStr += ',' + part
 
 		# Count the number of unclosed parens
@@ -76,6 +98,14 @@ def prefixSentenceParser(string, variable = True):
 	return res
 
 def defaultInferenceParser(string, sentenceParser = None):
+	'''
+	Parses an inference into an Inference object
+	
+	@param string - A string representation of an inference rule
+	@param sentenceParser - A function that parses the sentences in the inference rule (Defaults to prefixSentenceParser)
+	
+	@return - An inference parsed from the string
+	'''
 
 	if sentenceParser is None:
 		sentenceParser = prefixSentenceParser
