@@ -52,13 +52,18 @@ class Inference(proof.Proof):
 			self._printer = util.defaultInferencePrinter
 
 	def __iter__(self):
+		# Returns an iterator of itself
 		return InferenceIterator(self)
 
 	def __str__(self):
-		return self.name + '\n' + self._printer(self)
+		return self._printer(self)
 
 	def __repr__(self):
-		return self.name + '\n' + self._printer(self)
+		return self._printer(self)
+	
+	def __eq__(self, other):
+		# Two inference rules are equal if the premises are equal and the conclusions are the same
+		return self.getPremises() == other.getPremises() and self.getConclusion() == other.getConclusion()
 
 	def getPremises(self):
 		'''

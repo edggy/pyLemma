@@ -7,6 +7,7 @@ filename = ''
 if len(sys.argv) > 1:
 	filename = sys.argv[1]
 
+# Check if we have a valid file
 if not os.path.isfile(filename):
 	# python -m pip install easygui
 	try:
