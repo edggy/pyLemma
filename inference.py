@@ -95,12 +95,12 @@ class Inference(proof.Proof):
 			# If there is no mapping, then this inference is not valid
 			return False
 
-		# put all of the sentences into a list
+		# Put all of the sentences into a list
 		senList = []
 		for r in ref:
 			senList.append(r().getSentence())
 
-		#For each premise we need it to match at least one reference
+		# For each premise we need it to match at least one reference
 		mapping = self.makeMapping(conclusionMap, self._premises, senList)
 
 		# Return if a mapping exists

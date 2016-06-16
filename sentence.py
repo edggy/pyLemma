@@ -25,7 +25,7 @@ class SentenceIterator:
 
 class Sentence:
 	'''
-	A  finite sequence of symbols from a given alphabet that is part of a formal language
+	A finite sequence of symbols from a given alphabet that is part of a formal language
 	
 	Contains an operator and some number of arguments
 	'''
@@ -67,15 +67,15 @@ class Sentence:
 
 	def __eq__(self, other):
 		'''
-		Two sentences are equal iff their hashes are equal
+		Two sentences are equal iff their operators and all the arguments are equal
 		'''
-		return self._op == other._op and self._args == other._args
+		return self.op() == other.op() and self._args == other._args
 
 	def __ne__(self, other):
 		'''
 		Two sentences are not equal iff either their operators are not equal or their arguments are not equal
 		'''
-		return hash(self) != hash(other)
+		return self.op() != other.op() or self._args != other._args
 
 	def __gt__(self, other):  
 		'''

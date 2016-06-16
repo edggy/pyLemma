@@ -33,9 +33,9 @@ try:
 		
 		# Check that it is valid
 		valid = tstPrf[proof].verify()
-		if valid:
+		if valid is True:
 			# If it is valid, print it
-			print 'Valid'
+			print 'Valid\n--------------------------\n'
 		else:
 			# If it is not valid, print the line number of the error
 			print 'Invalid:\tError on line %d' % valid	

@@ -221,7 +221,7 @@ class Proof:
 			refSenList.append(sen[0])
 
 			# We are trying to prove the second part
-			sen = sen[1]			
+			sen = sen[1]		
 
 
 		prevSens = []
