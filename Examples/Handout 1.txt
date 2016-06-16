@@ -1,0 +1,56 @@
+include Rules/F Rules.inf
+
+proof
+"Handout 1"
+1	and(R,and(C,not(F)))	Assumption
+2	if(or(R,S),not(W))	Assumption
+3	R	And Elim Left	1
+4	or(R,S)	Or Intro Left	3
+5	not(W)	If Elim	2,4
+done
+
+proof
+"Handout 2" - Sub 1
+1	if(A,and(B,C))	Assumption
+2	not(C)	Assumption
+3	and(A,D)	Assumption
+4	A	And Elim Left	3
+5	and(B,C)	If Elim	1,4
+6	C	And Elim Right	5
+7	Contradiction	Contradiction Intro	2,6
+done
+
+proof
+"Handout 2"
+1	if(A,and(B,C))	Assumption
+2	not(C)	Assumption
+3	|-(and(A,D), Contradiction)	"Handout 2" - Sub 1	1,2
+4	not(and(A,D))	Not Intro	3
+done
+
+proof
+"Handout 3" - Sub 1
+1	iff(P,Q)	Assumption
+2	iff(Q,R)	Assumption
+3	P	Assumption
+4	Q	Iff Elim Left	1,3
+.	R	Iff Elim Left	2,4
+done
+
+proof
+"Handout 3" - Sub 2
+1	iff(P,Q)	Assumption
+2	iff(Q,R)	Assumption
+3	R	Assumption
+4	Q	Iff Elim Right	2,3
+.	P	Iff Elim Right	1,4
+done
+
+proof
+"Handout 3"
+1	iff(A,B)	Assumption
+2	iff(B,C)	Assumption
+3	|-(A,C)	"Handout 3" - Sub 1	1,2
+4	|-(C,A)	"Handout 3" - Sub 2	1,2
+5	iff(A,C)	Iff Intro	3,4
+done

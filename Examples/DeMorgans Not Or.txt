@@ -1,0 +1,27 @@
+include Rules/F Rules.inf
+
+proof
+DeMorgans Not Or - Sub 2
+1	not(or(P, Q))	Assumption
+2	Q	Assumption
+3	or(P, Q)	Or Intro Right	2
+4	Contradiction	Contradiction Intro	1,3
+done
+
+proof
+DeMorgans Not Or - Sub 1
+1	not(or(P, Q))	Assumption
+2	P	Assumption
+3	or(P, Q)	Or Intro Left	2
+4	Contradiction	Contradiction Intro	1,3
+done
+
+proof
+DeMorgans Not Or
+1	not(or(P, Q))	Assumption
+2	|-(P, Contradiction)	DeMorgans Not Or - Sub 1	1
+3	|-(Q, Contradiction)	DeMorgans Not Or - Sub 2	1
+4	not(P)	Not Intro	2
+5	not(Q)	Not Intro	3
+6	and(not(P), not(Q))	And Intro	4,5
+done
