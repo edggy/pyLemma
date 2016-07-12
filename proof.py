@@ -4,6 +4,7 @@ import inference
 import sentence
 import line
 import util
+import printers
 
 class Proof:
 	'''
@@ -27,7 +28,7 @@ class Proof:
 			self._printer = proofPrinter
 		else:
 			# Use the default printer
-			self._printer = util.defaultProofPrinter		
+			self._printer = printers.defaultProofPrinter		
 
 		# Initally a proof has no lines
 		# A list of the lines of the proof
@@ -344,7 +345,7 @@ class Proof:
 		return self._printer(self)		
 
 	def __repr__(self):
-		return self.name + '\n' + self._printer(self)
+		return self._printer(self)
 
 	def __iadd__(self, value):
 		'''

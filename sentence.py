@@ -1,6 +1,7 @@
 import copy
 
 import util
+import printers
 
 
 class SentenceIterator:
@@ -38,7 +39,7 @@ class Sentence:
 		self._args = args
 		
 		# Use the default printer by default
-		self._printer = util.prefixSentencePrinter
+		self._printer = printers.prefixSentencePrinter
 
 	def __repr__(self):
 		return str(self)

@@ -1,4 +1,5 @@
 import proof
+import printers
 
 class InferenceIterator:
 	'''
@@ -33,6 +34,10 @@ class InferenceIterator:
 			raise StopIteration
 
 class Inference(proof.Proof):
+	'''
+	Inference is the act or process of deriving logical conclusions from premises known or assumed to be true.
+	'''
+	
 	def __init__(self, name, conclusion = None, premises = None, printer = None):
 		# The name of this Inference rule
 		# TODO: Allow a nickname to print
@@ -44,12 +49,12 @@ class Inference(proof.Proof):
 		# A set of premises
 		self._premises = set(premises)
 
-		# THe printer to print the infrence rule
-		self._printer = printer
-		if self._printer is None:
-			import util
+		# The printer to print the infrence rule
+		if printer is None:
 			# Use default printer
-			self._printer = util.defaultInferencePrinter
+			self._printer = printers.defaultInferencePrinter
+		else:
+			self._printer = printer
 
 	def __iter__(self):
 		# Returns an iterator of itself
