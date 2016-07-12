@@ -206,7 +206,7 @@ class Proof:
 		'''
 
 		# Check that this proof is valid, if it is not then we canot check anything
-		if self.verify() < 1:
+		if self.verify() is not True:
 			return False
 
 		# put all of the reference sentences into a list
@@ -215,6 +215,11 @@ class Proof:
 			refSenList.append(r().getSentence())
 
 		premises = self.getPremises()
+		
+		# Generalize the premises
+		genPrem = set([])
+		for prem in premises:
+			genPrem.add(prem.generalize())
 
 		# TODO: Use other symbols for subproof
 		if sen.op() == '|-':
@@ -229,13 +234,13 @@ class Proof:
 		metaSen = None
 		for s in self:
 			# Assume s is the conclusion
-			curSen = s.getSentence()
+			curSen = s.getSentence().generalize()
 
 			# Check if the current sentence can map into the conclusion
 			conclusionMap = curSen.mapInto(sen)
 			if conclusionMap:
 				# Try to map the assumptions to the refSenList
-				mapping = self.makeMapping(conclusionMap, premises, refSenList)
+				mapping = self.makeMapping(conclusionMap, genPrem, refSenList)
 				if mapping:
 					# If there is a mapping then we are done
 					return True

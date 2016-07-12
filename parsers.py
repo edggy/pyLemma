@@ -1,9 +1,8 @@
-def prefixSentenceParser(string, variable = True):
+def prefixSentenceParser(string):
     '''
     Parses a sentence from its prefix form
 
     @param string - A string representation of a sentence
-    @param variable - Should we treat base components as variables (True) or literals (False)
 
     @return - A sentence parsed from the string
     '''
@@ -11,13 +10,14 @@ def prefixSentenceParser(string, variable = True):
     from sentence import Variable
     from sentence import Literal
     from sentence import InvalidSentenceError
-
-    variableSymbol = '@'
-
-    if variable:
-        init = Variable
-    else:
-        init = Literal
+    
+    def init(string, variableSymbol = '@'):
+        # If the operator starts with the variableSymbol then make it a generic operator
+        if string.startswith(variableSymbol):
+            return Variable(string[len(variableSymbol):])
+        else:
+            # Otherwise make it a literal
+            return Literal(string)
 
     # Remove all the whitespace in the string
     string = "".join(string.split())
@@ -54,12 +54,8 @@ def prefixSentenceParser(string, variable = True):
         # the operator is everthing before the first open paren
         opStr = string[:firstP]
 
-        # If the operator starts with the variableSymbol then make it a generic operator
-        if opStr.startswith(variableSymbol):
-            op = Variable(opStr[len(variableSymbol):])
-        else:
-            # Otherwise make it a literal
-            op = Literal(opStr)
+        # Parse the operator
+        op = init(opStr)
 
     # Find the last close paren
     lastP = string.rfind(')')
@@ -72,7 +68,7 @@ def prefixSentenceParser(string, variable = True):
 
     if len(tokens) == 1:
         # No commas, one argument
-        var = init(string)
+        var = prefixSentenceParser(string)
         return Sentence(op, var)
 
     # list of the arguments as sentences or variables
@@ -342,7 +338,7 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
         linequeue.append((line, n, filename))
 
     # Create the data, used to keep track of the state of the fsm
-    data = {'queue':linequeue, 'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\nA')}, 
+    data = {'queue':linequeue, 'proofs':{}, 'infs':{}, 
             'state': None, 'include':'include', 'path':path, 'imported':set([filename]), 'proofDone': 'done', 
             'infDone': 'done', 'proofSplit': '\t', 'supportSplit': ',', 'comment': '#'}
 
@@ -378,4 +374,28 @@ class LineError(Exception):
     An Exception on a specific line while parsing the proof
     '''
     pass
+
+if __name__ == '__main__':
+    
+    sen1 = prefixSentenceParser('A')
+    sen2 = prefixSentenceParser('@B')
+    
+    print sen1
+    print sen2
+    
+    print sen1.mapInto(sen2)
+    print sen2.mapInto(sen1)
+    
+    sen3 = prefixSentenceParser('not(@A)')
+    sen4 = prefixSentenceParser('not(or(A,not(A)))')
+    
+    print sen3
+    print sen4.generalize()
+    
+    print sen3.mapInto(sen4)
+    print sen4.mapInto(sen3)    
+    
+    sen5 = prefixSentenceParser('not(not(@A))')
+    
+    print sen5
 

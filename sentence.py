@@ -236,6 +236,21 @@ class Sentence:
 		Gets the arity of the main operator i.e. the number of arguments
 		'''
 		return len(self._args)
+	
+	def generalize(self):
+		'''
+		Converts all literals into varibles
+		
+		@return - a copy of this sentence with all of the literals as variables with the same name
+		'''
+		
+		retArgs = list(self._args)
+		
+		for n, arg in enumerate(retArgs):
+			retArgs[n] = arg.generalize()
+			
+		return Sentence(self.op(), *retArgs)
+		
 
 class Variable(Sentence):
 	'''
@@ -244,13 +259,17 @@ class Variable(Sentence):
 	
 	def __init__(self, name = 'A'):
 		# The name of the variable, same named variables are considered to be the same variable
-		self._name = ''.join(str(name).split())
+		
+		try:
+			self._name = name._name
+		except AttributeError:
+			self._name = ''.join(str(name).split())
 
 	def __repr__(self):
-		return self._name    
+		return '@' + self._name    
 
 	def __str__(self):
-		return self._name
+		return '@' + self._name
 
 	def __lt__(self, other):
 		'''
@@ -315,15 +334,29 @@ class Variable(Sentence):
 		return 0
 
 	def mapInto(self, other):
-		return {self:other}
+		'''
+		A variable can map into anything
+		'''
+		return {self: other}
 
 	def subsitute(self, mapping):
 		return self
+	
+	def generalize(self):
+		pass
 
 class Literal(Variable):
 	'''
 	A literal is the smallest sentence
 	'''
+	
+	def __repr__(self):
+			return self._name    
+	
+	def __str__(self):
+		return self._name
+
+
 	def __lt__(self, other):
 		'''
 		Vacuously false since a literal cannot be mapped except to itsself
@@ -346,7 +379,16 @@ class Literal(Variable):
 		return str(self) != str(other)	
 
 	def mapInto(self, other):
+		'''
+		A literal can only map into itsself 
+		'''
+		if self == other:
+			return {self: other}
+		
 		return None	
+	
+	def generalize(self):
+		return Variable(self)
 
 class InvalidSentenceError(Exception):
 	pass

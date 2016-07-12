@@ -1,0 +1,7 @@
+include Rules/F Rules.inf
+
+proof
+Test
+1	not(not(A))	Assumption
+2	A	Not Elim	1
+done

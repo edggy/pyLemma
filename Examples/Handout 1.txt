@@ -34,7 +34,7 @@ proof
 2	iff(Q,R)	Assumption
 3	P	Assumption
 4	Q	Iff Elim Left	1,3
-.	R	Iff Elim Left	2,4
+5	R	Iff Elim Left	2,4
 done
 
 proof
@@ -43,7 +43,7 @@ proof
 2	iff(Q,R)	Assumption
 3	R	Assumption
 4	Q	Iff Elim Right	2,3
-.	P	Iff Elim Right	1,4
+5	P	Iff Elim Right	1,4
 done
 
 proof

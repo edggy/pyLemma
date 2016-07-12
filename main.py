@@ -27,18 +27,23 @@ try:
 	# Set the line numbering to start at 1 (instead of the default 0)
 	[tstPrf[i].setNumbering(lambda x: x+1) for i in tstPrf]
 	
-	#for proof in tstPrf:
-		## Print each proof that was parsed
-		#print tstPrf[proof]
+	for proof in tstPrf:
+		# Print each proof that was parsed
+		print tstPrf[proof]
 		
-		## Check that it is valid
-		#valid = tstPrf[proof].verify()
-		#if valid is True:
-			## If it is valid, print it
-			#print 'Valid\n--------------------------\n'
-		#else:
-			## If it is not valid, print the line number of the error
-			#print 'Invalid:\tError on line %d\n' % valid
+		# Check that it is valid
+		valid = tstPrf[proof].verify()
+		if valid is True:
+			# If it is valid, print it
+			print 'Valid\n--------------------------\n'
+		else:
+			# If it is not valid, print the line number of the error
+			print 'Invalid:\tError on line %d' % valid
+			print '--------------------------\n'
+			
+	for proof in tstPrf:
+		# Print each proof that was parsed
+		print proof	
 	
 	done = False
 	while not done:
