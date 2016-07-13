@@ -1,0 +1,31 @@
+include F Rules.inf
+
+inference
+ForAll Intro
+|-(, ?f(?a))	$?a
+#----
+ForAll(?x, ?f(?x))
+done
+
+inference
+ForAll Elim
+ForAll(?x, ?f(?x))
+#----
+?f(?a)
+done
+
+inference
+Exists Intro
+?f(?a)
+#----
+Exists(?x, ?f(?x))
+done
+
+inference
+Exists Elim
+Exists(?x, ?f(?x))
+|-(?f(?a), ?Q)	$?a
+#----
+?Q
+done
+
