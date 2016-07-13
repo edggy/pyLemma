@@ -1,0 +1,11 @@
+include Rules/Natural Inference Rules.inf
+
+proof
+"Handout 7"
+1	if(M, I)			Assumption
+2	and(not(I), L)		Assumption
+3	or(M, B)			Assumption
+4	not(I)				Simp Left	2
+5	not(M)				MT			1,4
+.	B					DS Left		3,5
+done

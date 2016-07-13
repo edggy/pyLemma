@@ -1,0 +1,18 @@
+include ../Rules/F Rules.inf
+
+proof
+Modus Tollens - Sub 1
+a	if(P, Q)				Assumption
+b	not(Q)					Assumption
+c	P						Assumption
+d	Q						If Elim					a,c
+e	Contradiction			Contradiction Intro		b,d
+done
+
+proof
+Modus Tollens
+1	if(P, Q)				Assumption
+2	not(Q)					Assumption
+3	|-(P, Contradiction)	Modus Tollens - Sub 1	1,2
+4	not(P)					Not Intro				3
+done

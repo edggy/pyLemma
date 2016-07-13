@@ -1,0 +1,32 @@
+include ../Rules/F Rules.inf
+
+proof
+DS Left - Sub 2
+1	A					Assumption
+done
+
+proof
+DS Left - Sub 1
+1	not(A)				Assumption
+2	A					Assumption
+3	Contradiction		Contradiction Intro		1,2
+4	B					Contradiction Elim		3
+done
+
+proof
+DS Left
+1	or(A,B)
+2	not(A)
+3	|-(A, B)			DS Left - Sub 1			2
+4	|-(B, B)			DS Left - Sub 2
+.	B					Or Elim					1,3,4
+done
+
+proof
+DS Right
+1	or(A,B)
+2	not(B)
+3	|-(A, A)			DS Left - Sub 2
+4	|-(B, A)			DS Left - Sub 1			2
+.	A					Or Elim					1,3,4
+done
