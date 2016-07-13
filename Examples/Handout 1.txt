@@ -3,54 +3,238 @@ include Rules/F Rules.inf
 proof
 "Handout 1"
 1	and(R,and(C,not(F)))	Assumption
-2	if(or(R,S),not(W))	Assumption
-3	R	And Elim Left	1
-4	or(R,S)	Or Intro Left	3
-5	not(W)	If Elim	2,4
+2	if(or(R,S),not(W))		Assumption
+3	R						And Elim Left	1
+4	or(R,S)					Or Intro Left	3
+5	not(W)					If Elim			2,4
 done
 
 proof
 "Handout 2" - Sub 1
-1	if(A,and(B,C))	Assumption
-2	not(C)	Assumption
-3	and(A,D)	Assumption
-4	A	And Elim Left	3
-5	and(B,C)	If Elim	1,4
-6	C	And Elim Right	5
-7	Contradiction	Contradiction Intro	2,6
+1	if(A,and(B,C))					Assumption
+2	not(C)							Assumption
+3	and(A,D)						Assumption
+4	A								And Elim Left			3
+5	and(B,C)						If Elim					1,4
+6	C								And Elim Right			5
+7	Contradiction					Contradiction Intro		2,6
 done
 
 proof
 "Handout 2"
-1	if(A,and(B,C))	Assumption
-2	not(C)	Assumption
-3	|-(and(A,D), Contradiction)	"Handout 2" - Sub 1	1,2
-4	not(and(A,D))	Not Intro	3
+1	if(A,and(B,C))					Assumption
+2	not(C)							Assumption
+3	|-(and(A,D), Contradiction)		"Handout 2" - Sub 1		1,2
+4	not(and(A,D))					Not Intro				3
 done
 
 proof
 "Handout 3" - Sub 1
 1	iff(P,Q)	Assumption
 2	iff(Q,R)	Assumption
-3	P	Assumption
-4	Q	Iff Elim Left	1,3
-5	R	Iff Elim Left	2,4
+3	P			Assumption
+4	Q			Iff Elim Left			1,3
+5	R			Iff Elim Left			2,4
 done
 
 proof
 "Handout 3" - Sub 2
 1	iff(P,Q)	Assumption
 2	iff(Q,R)	Assumption
-3	R	Assumption
-4	Q	Iff Elim Right	2,3
-5	P	Iff Elim Right	1,4
+3	R			Assumption
+4	Q			Iff Elim Right			2,3
+5	P			Iff Elim Right			1,4
 done
 
 proof
 "Handout 3"
 1	iff(A,B)	Assumption
 2	iff(B,C)	Assumption
-3	|-(A,C)	"Handout 3" - Sub 1	1,2
-4	|-(C,A)	"Handout 3" - Sub 2	1,2
-5	iff(A,C)	Iff Intro	3,4
+3	|-(A,C)		"Handout 3" - Sub 1		1,2
+4	|-(C,A)		"Handout 3" - Sub 2		1,2
+5	iff(A,C)	Iff Intro				3,4
 done
+
+proof
+"Handout 4" - Sub 2
+1	iff(F,G)			Assumption
+2	G					Assumption
+3	F					Iff Elim Right			1,2
+4	and(F,G)			And Intro				2,3
+done
+
+proof
+"Handout 4" - Sub 1
+1	iff(F,G)			Assumption
+2	F					Assumption
+3	G					Iff Elim Left			1,2
+4	and(F,G)			And Intro				2,3
+done
+
+proof
+"Handout 4"
+1	iff(F,G)			Assumption
+2	or(F,G)				Assumption
+3	|-(F, and(F,G))		"Handout 4" - Sub 1		1
+4	|-(G, and(F,G))		"Handout 4" - Sub 2		1
+5	and(F,G)			Or Elim					2,3,4
+done
+
+proof
+"Handout 5"
+1	iff(not(B), Z)		Assumption
+2	if(N, B)			Assumption
+3	and(Z, N)			Assumption
+4	N					And Elim Right			3
+5	B					If Elim					2,4
+6	Z					And Elim Left			3
+7	not(B)				Iff Elim Right			1,6
+n-1	Contradiction		Contradiction Intro		5,7
+n	not(H)				Contradiction Elim		n-1
+done
+
+# Include to use in problem 6
+include F Lemmas/Excluded Middle.prf
+include F Lemmas/Modus Tollens Iff.prf
+
+proof 
+"Handout 6" - Sub 4
+1	iff(A, B)						Assumption
+2	iff(A, not(B))					Assumption
+3	not(A)							Assumption
+4	not(B)							Modus Tollens Iff Left	1,3
+5	not(not(B))						Modus Tollens Iff Left	2,3
+.	Contradiction					Contradiction Intro		4,5
+done
+
+proof 
+"Handout 6" - Sub 3
+1	iff(A, B)						Assumption
+2	iff(A, not(B))					Assumption
+3	A								Assumption
+4	B								Iff Elim Left			1,3
+5	not(B)							Iff Elim Left			2,3
+.	Contradiction					Contradiction Intro		4,5
+done
+
+proof 
+"Handout 6" - Sub 2
+1	iff(A, B)						Assumption
+2	iff(A, not(B))					Assumption
+3	or(A, not(A))					Ex Mid
+4	|-(A, Contradiction)			"Handout 6" - Sub 3		1,2
+5	|-(not(A), Contradiction)		"Handout 6" - Sub 4		1,2
+.	Contradiction					Or Elim					3,4,5
+done
+
+proof 
+"Handout 6" - Sub 1
+1	iff(A, B)						Assumption
+2	iff(B, not(C))					Assumption
+3	iff(A, C)						Assumption
+4	iff(A, not(C))					"Handout 3"				1,2
+.	Contradiction					"Handout 6" - Sub 2		3,4
+done
+
+proof 
+"Handout 6"
+1	iff(A, B)						Assumption
+2	iff(B, not(C))					Assumption
+3	|-(iff(A, C), Contradiction)	"Handout 6" - Sub 1		1,2
+.	not(iff(A, C))					Not Intro				3
+done
+
+include F Lemmas/Modus Tollens.prf
+include F Lemmas/Disjunctive Syllogism.prf
+
+proof 
+"Handout 7"
+1	if(M, I)			Assumption
+2	and(not(I), L)		Assumption
+3	or(M, B)			Assumption
+4	not(I)				And Elim Left	2
+5	not(M)				Modus Tollens	1,4
+.	B					DS Left			3,5
+done
+
+proof 
+"Handout 8" - Sub 1
+.	Q	Assumption
+done
+
+proof 
+"Handout 8" - Sub 2
+1	iff(J, D)			Assumption
+2	not(D)				Assumption
+3	J					Assumption
+4	not(J)				Modus Tollens Iff Right		1,2
+5	Contradiction		Contradiction Intro			3,4
+.	Q					Contradiction Elim			5
+done
+
+proof 
+"Handout 8"
+1	or(Q, iff(J, D))	Assumption
+2	not(D)				Assumption
+3	J					Assumption
+4	|-(Q,Q)				"Handout 8" - Sub 1
+5	|-(iff(J, D), Q)	"Handout 8" - Sub 2			2,3
+.	Q					Or Elim						1,4,5
+done
+
+proof
+"Handout 9"
+1	or(A, B)		Assumption
+2	or(not(B), C)	Assumption
+3	not(C)			Assumption
+4	not(B)			DS Right		2,3
+.	A				DS Right		1,4
+done
+
+proof
+"Handout 10" - Sub 3
+1	H							Assumption
+2	not(H)						Assumption
+3	Contradiction				Contradiction Intro			1,2
+.	J							Contradiction Elim			3
+done
+
+proof
+"Handout 10" - Sub 2
+1	H							Assumption
+2	or(not(H), J)				Assumption
+3	|-(not(H), J)				"Handout 10" - Sub 3		1
+4	|-(J, J)					"Handout 8" - Sub 1
+.	J							Or Elim						2,3,4
+done
+
+proof
+"Handout 10" - Sub 2.1
+1	if(K, not(I))				Assumption
+2	I							Assumption
+3	K							Assumption
+4	not(I)						If Elim						1,3
+.	J							"Handout 10" - Sub 3		2,4
+done
+
+proof
+"Handout 10" - Sub 1
+1	or(or(not(H), J), K)		Assumption
+2	if(K, not(I))				Assumption
+3	and(H, I)					Assumption
+4	H							And Elim Left				3
+5	I							And Elim Right				3
+6	|-(or(not(H), J), J)		"Handout 10" - Sub 2		4
+7	|-(K, J)					"Handout 10" - Sub 2.1		2,5
+.	J							Or Elim						1,6,7
+done
+
+proof
+"Handout 10"
+1	or(or(not(H), J), K)		Assumption
+2	if(K, not(I))				Assumption
+3	|-(and(H, I), J)			"Handout 10" - Sub 1		1,2
+.	if(and(H, I), J)			If Intro					3
+done
+
+

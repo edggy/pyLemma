@@ -11,7 +11,7 @@ def prefixSentenceParser(string):
     from sentence import Literal
     from sentence import InvalidSentenceError
     
-    def init(string, variableSymbol = '@'):
+    def init(string, variableSymbol = '?'):
         # If the operator starts with the variableSymbol then make it a generic operator
         if string.startswith(variableSymbol):
             return Variable(string[len(variableSymbol):])
@@ -286,6 +286,9 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 
         # Split the line into tokens
         toks = string.split(data['proofSplit'])
+        
+        # Remove empty strings, this is used to allow multiple tabs between entries
+        toks = filter(None, toks)
 
         # Strip all the parts
         toks = map(lambda a: a.strip(), toks)	
@@ -338,7 +341,7 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
         linequeue.append((line, n, filename))
 
     # Create the data, used to keep track of the state of the fsm
-    data = {'queue':linequeue, 'proofs':{}, 'infs':{}, 
+    data = {'queue':linequeue, 'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\n?A')}, 
             'state': None, 'include':'include', 'path':path, 'imported':set([filename]), 'proofDone': 'done', 
             'infDone': 'done', 'proofSplit': '\t', 'supportSplit': ',', 'comment': '#'}
 

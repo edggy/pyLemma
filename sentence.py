@@ -266,10 +266,10 @@ class Variable(Sentence):
 			self._name = ''.join(str(name).split())
 
 	def __repr__(self):
-		return '@' + self._name    
+		return '?' + self._name    
 
 	def __str__(self):
-		return '@' + self._name
+		return '?' + self._name
 
 	def __lt__(self, other):
 		'''
