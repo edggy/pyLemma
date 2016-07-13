@@ -1,0 +1,98 @@
+include ../Rules/F Rules.inf
+
+proof
+DeMorgan's (or over not) - Sub 2
+1	P							Assumption
+2	not(P)						Assumption
+3	Contradiction				Contradiction Intro		1,2
+done
+
+proof
+DeMorgan's (or over not) - Sub 1
+1	or(not(A),not(B))				Assumption
+2	and(A, B)						Assumption
+3	A								And Elim Left							2
+4	B								And Elim Right							2
+5	|-(not(A), Contradiction)		DeMorgan's (or over not) - Sub 2		3
+6	|-(not(B), Contradiction)		DeMorgan's (or over not) - Sub 2		4
+.	Contradiction					Or Elim									1,5,6
+done
+
+proof
+DeMorgan's (or over not)
+1	or(not(A),not(B))				Assumption
+2	|-(and(A, B), Contradiction)	DeMorgan's (or over not) - Sub 1		1
+.	not(and(A, B))					Not Intro								2
+done
+
+proof
+DeMorgan's (not over or) - Sub 1
+1	not(or(P, Q))			Assumption
+2	P						Assumption
+3	or(P, Q)				Or Intro Left							2
+.	Contradiction			Contradiction Intro						1,3
+done
+
+proof
+DeMorgan's (not over or) - Sub 1.1
+1	not(or(P, Q))			Assumption
+2	Q						Assumption
+3	or(P, Q)				Or Intro Right							2
+.	Contradiction			Contradiction Intro						1,3
+done
+
+proof
+DeMorgan's (not over or)
+1	not(or(A, B))			Assumption
+2	|-(A, Contradiction)	DeMorgan's (not over or) - Sub 1		1
+3	|-(B, Contradiction)	DeMorgan's (not over or) - Sub 1.1		1
+4	not(A)					Not Intro								2
+5	not(B)					Not Intro								3
+.	and(not(A),not(B))		And Intro								4,5
+done
+
+proof
+DeMorgan's (and over not) - Sub 2
+1	not(P)							Assumption
+2	P								Assumption
+.	Contradiction					Contradiction Intro						1,2
+done
+
+proof
+DeMorgan's (and over not) - Sub 1
+1	and(not(A),not(B))				Assumption
+2	or(A, B)						Assumption
+3	not(A)							And Elim Left							1
+4	not(B)							And Elim Right							1
+5	|-(A, Contradiction)			DeMorgan's (and over not) - Sub 2		3
+6	|-(B, Contradiction)			DeMorgan's (and over not) - Sub 2		4
+.	Contradiction					Or Elim									2,5,6
+done
+
+proof
+DeMorgan's (and over not)
+1	and(not(A),not(B))				Assumption
+2	|-(or(A, B), Contradiction)		DeMorgan's (and over not) - Sub 1		1
+.	not(or(A, B))					Not Intro								2
+done
+
+proof
+DeMorgan's (not over and) - Sub 1
+1	not(and(A, B))								Assumption
+2	not(or(not(A),not(B)))						Assumption
+3	and(not(not(A)), not(not(B)))				DeMorgan's (not over or)	2
+4	not(not(A))									And Elim Left				3
+5	not(not(B))									And Elim Right				3
+6	A											Not Elim					4
+7	B											Not Elim					5
+8	and(A, B)									And Intro					6,7
+.	Contradiction								Contradiction Intro			1,8
+done
+
+proof
+DeMorgan's (not over and)
+1	not(and(A, B))								Assumption
+2	|-(not(or(not(A),not(B))), Contradiction)	DeMorgan's (not over and) - Sub 1		1
+3	not(not(or(not(A),not(B))))					Not Intro								2
+.	or(not(A),not(B))							Not Elim								3
+done
