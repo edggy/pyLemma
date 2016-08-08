@@ -1,0 +1,27 @@
+include Rules/F Rules - FO.inf
+
+proof
+"Equals is Commutative" - Sub 3
+1	=(a, b)		Assumption
+2	=(a, a)		= Intro
+.	=(b, a)		= Elim		1,2
+done
+
+proof
+"Equals is Commutative" - Sub 2
+1	|-(=(a, b), =(b, a))	"Equals is Commutative" - Sub 3
+2	|-(=(b, a), =(a, b))	"Equals is Commutative" - Sub 3
+.	iff(=(a, b), =(b, a))	Iff Intro	1,2
+done
+
+proof
+"Equals is Commutative" - Sub 1
+1	|-(, iff(=(a, b), =(b, a)))						"Equals is Commutative" - Sub 2
+.	ForAll[y](iff(=(a, y), =(y, a)))				ForAll Intro		1
+done
+
+proof
+"Equals is Commutative"
+1	|-(, ForAll[y](iff(=(a, y), =(y, a))))			"Equals is Commutative" - Sub 1
+.	ForAll[x](ForAll[y](iff(=(x, y), =(y, x))))		ForAll Intro		1
+done

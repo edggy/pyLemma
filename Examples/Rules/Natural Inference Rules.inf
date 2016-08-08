@@ -1,135 +1,135 @@
 inference
 MP
-if(?A,?B)
-?A
+if(@A,@B)
+@A
 #----
-?B
+@B
 done
 
 inference
 MT
-if(?A,?B)
-not(?B)
+if(@A,@B)
+not(@B)
 #----
-not(?A)
+not(@A)
 done
 
 inference
 Simp Left
-and(?A,?B)
+and(@A,@B)
 #----
-?A
+@A
 done
 
 inference
 DS Left
-or(?A,?B)
-not(?A)
+or(@A,@B)
+not(@A)
 #----
-?B
+@B
 done
 
 inference
 DS Right
-or(?A,?B)
-not(?B)
+or(@A,@B)
+not(@B)
 #----
-?A
+@A
 done
 
 inference
 Exclusion Left
-not(and(?A,?B))
-?A
+not(and(@A,@B))
+@A
 #----
-not(?B)
+not(@B)
 done
 
 inference
 Exclusion Right
-not(and(?A,?B))
-?B
+not(and(@A,@B))
+@B
 #----
-not(?A)
+not(@A)
 
 inference
 Simp Right
-and(?A,?B)
+and(@A,@B)
 #----
-?B
+@B
 done
 
 inference
 Conjunction
-?A
-?B
+@A
+@B
 #----
-and(?A,?B)
+and(@A,@B)
 
 inference
 CD
-if(?A,?B)
-if(?C,?D)
-or(?A,?C)
+if(@A,@B)
+if(@C,@D)
+or(@A,@C)
 #---
-or(?B,?D)
+or(@B,@D)
 done
 
 inference
 DD
-if(?A,?B)
-if(?C,?D)
-or(not(?B),not(?D))
+if(@A,@B)
+if(@C,@D)
+or(not(@B),not(@D))
 #----
-or(not(?A, not(?C)))
+or(not(@A, not(@C)))
 done
 
 inference
 Addition Left
-?A
+@A
 #----
-or(?A,?B)
+or(@A,@B)
 done
 
 inference
 Addition Right
-?B
+@B
 #----
-or(?A,?B)
+or(@A,@B)
 done
 
 inference
 HS
-if(?A,?B)
-if(?B,?C)
+if(@A,@B)
+if(@B,@C)
 #----
-if(?A,?C)
+if(@A,@C)
 done
 
 inference
 Weakening Left
-if(?A, and(?B,?C))
+if(@A, and(@B,@C))
 #----
-if(?A,?B)
+if(@A,@B)
 done
 
 inference
 Weakening Right
-if(?A,and(?B,?C))
+if(@A,and(@B,@C))
 #----
-if(?A,?C)
+if(@A,@C)
 done
 
 inference
 Strengthening Left
-if(?A,?B)
+if(@A,@B)
 #----
-if(and(?A,?C),?B)
+if(and(@A,@C),@B)
 done
 
 inference
 Strengthening Right
-if(?A,?B)
+if(@A,@B)
 #----
-if(and(?C,?A),?B)
+if(and(@C,@A),@B)
 done

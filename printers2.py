@@ -1,33 +1,50 @@
-def prefixSentencePrinter(sen):
+def prefixSentencePrinter(sen, symbols = None):
     '''
     A printer that prints a sentence in prefix notation
 
     @param sen - The sentence to print
+    @param symbols - A dict with symbols to use.  Valid keys are: 'seperator', 'openParen' and 'closeParen'
     @return - The prefix representation of this string
     '''	
 
-    # If the arity is 0, then just print the operator
-    if sen.arity() == 0:
-        return str(sen.op())
+    if symbols is None:
+        symbols = {}
 
-    # Otherwise, print the operator
-    string = str(sen.op())
+    if 'seperator' not in symbols:
+        symbols['seperator'] = ','
 
-    # Followed by an open paren
-    string += '('
-    first = True
+    if 'openParen' not in symbols:
+        symbols['openParen'] = '('
 
-    # Then by its arguments
-    for arg in sen.args():
-        string += str(arg) + ','
+    if 'closeParen' not in symbols:
+        symbols['closeParen'] = ')'    
 
-    # Remove the extra comma
-    string = string[:-1]
+    try:
+        # If the arity is 0, then just print the operator
+        if sen.arity() == 0:
+            return str(sen.op())
 
-    # Followed by a close paren
-    string += ')'
+        # Otherwise, print the operator
+        string = str(sen.op())
 
-    return string
+        # Followed by an open paren
+        string += symbols['openParen']
+        first = True
+
+        # Then by its arguments
+        for arg in sen.args():
+            string += prefixSentencePrinter(arg) + symbols['seperator']
+
+        # Remove the extra comma
+        string = string[:-1]
+
+        # Followed by a close paren
+        string += symbols['closeParen']
+
+        return string
+
+    except AttributeError:
+        return str(sen)
 
 def infixSentencePrinter(sen):
     '''

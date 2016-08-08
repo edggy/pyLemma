@@ -1,42 +1,83 @@
-def prefixSentenceParser(string):
+import sentence2 as sentence
+
+sf = sentence.sf
+
+def prefixSentenceParser(string, symbols = None):
     '''
     Parses a sentence from its prefix form
 
     @param string - A string representation of a sentence
+    @param symbols - A dict of symbols to use.  Valid keys are: 'variable', 'wff', 'openParen', 'closeParen', 'seperator'
 
     @return - A sentence parsed from the string
     '''
-    from sentence import Sentence
-    from sentence import Variable
-    from sentence import Literal
-    from sentence import InvalidSentenceError
-    
-    def init(string, variableSymbol = '?'):
+
+    if symbols is None:
+        symbols = {}
+
+    if 'variable' not in symbols:
+        symbols['variable'] = '?'
+
+    if 'wff' not in symbols:
+        symbols['wff'] = '@'    
+
+    if 'openParen' not in symbols:
+        symbols['openParen'] = '('   
+
+    if 'closeParen' not in symbols:
+        symbols['closeParen'] = ')'
+
+    if 'seperator' not in symbols:
+        symbols['seperator'] = ','
+
+
+
+    #from sentence2 import Sentence
+    #from sentence2 import Variable
+    #from sentence2 import Literal
+    #from sentence2 import InvalidSentenceError
+
+    def init(string):
         # If the operator starts with the variableSymbol then make it a generic operator
-        if string.startswith(variableSymbol):
-            return Variable(string[len(variableSymbol):])
+        if '[' in string and symbols['openParen'] != '[':
+            newSymbols = dict(symbols)
+            newSymbols['openParen'] = '['
+            newSymbols['closeParen'] = ']'
+            return prefixSentenceParser(string, newSymbols)
+            
+        if string.startswith(symbols['wff']):
+            return sf.generateWff(string[len(symbols['wff']):], symbols['wff'])        
+        if string.startswith(symbols['variable']):
+            return sf.generateVariable(string[len(symbols['variable']):], symbols['variable'])
         else:
             # Otherwise make it a literal
-            return Literal(string)
+            return sf.generateLiteral(string)
 
     # Remove all the whitespace in the string
     string = "".join(string.split())
 
     # Count the difference in the number of open and close parenthesis
-    parenCount = string.count('(') - string.count(')')
+    parenCount = string.count(symbols['openParen']) - string.count(symbols['closeParen'])
 
     # raise error if they are unequal
     if parenCount > 0:
-        raise InvalidSentenceError('Unmatched Close Parenthesis')
+        raise sentence.InvalidSentenceError('Unmatched Close Parenthesis')
     elif parenCount < 0:
-        raise InvalidSentenceError('Unmatched Open Parenthesis')
+        raise sentence.InvalidSentenceError('Unmatched Open Parenthesis')
 
     # find the first open paren
-    firstP = string.find('(')
+    firstP = string.find(symbols['openParen'])
 
     if firstP < 0:
-        # if there is no open paren, then this is a variable
+        # if there is no open paren, then this is a variable or an operator
         # 'A'
+        # 'A[?x]
+        if '[' in string:
+            newSymbols = dict(symbols)
+            newSymbols['openParen'] = '['
+            newSymbols['closeParen'] = ']'
+            sen = prefixSentenceParser(string, newSymbols)      
+            return sf.generateOperator(sen[0], sen[1:], newSymbols)
         return init(string)
 
     elif firstP == 0:
@@ -49,27 +90,33 @@ def prefixSentenceParser(string):
             return init(string[1:-1])
 
         # If there are commas, then it is a sentence with no operator
-        op = None
+        op = init('')
     else:
         # the operator is everthing before the first open paren
         opStr = string[:firstP]
 
         # Parse the operator
+        #opSymbols = dict(symbols)
+        #opSymbols['openParen'] = '['
+        #opSymbols['closeParen'] = ']'
         op = init(opStr)
 
     # Find the last close paren
-    lastP = string.rfind(')')
+    lastP = string.rfind(symbols['closeParen'])
 
     # take the operator and its parens out of the string, anything after the last paren is ignored
-    string = string[firstP+1:lastP]
+    string, extra = string[firstP+1:lastP], string[lastP + 1:]
 
     # Split the arguments into tokens
     tokens = string.split(',')
 
     if len(tokens) == 1:
         # No commas, one argument
+        # e.g. 'not(A)'
         var = prefixSentenceParser(string)
-        return Sentence(op, var)
+        data = dict(symbols)
+        data['extra'] = extra        
+        return sf.generateSentence(op, (var,), data)
 
     # list of the arguments as sentences or variables
     args = []
@@ -88,8 +135,8 @@ def prefixSentenceParser(string):
             cumStr += ',' + part
 
         # Count the number of unclosed parens
-        openCount += part.count('(')
-        openCount -= part.count(')')
+        openCount += part.count(symbols['openParen'])
+        openCount -= part.count(symbols['closeParen'])
 
         # If all the parens match up, then it must be a whole argument
         if openCount == 0:
@@ -99,7 +146,9 @@ def prefixSentenceParser(string):
             # reset cumStr to take care of the next part
             cumStr = ''
 
-    res = Sentence(op, *args)
+    data = dict(symbols)
+    data['extra'] = extra
+    res = sf.generateSentence(op, args, data)
     return res
 
 def defaultInferenceParser(string, sentenceParser = None):
@@ -286,7 +335,7 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
 
         # Split the line into tokens
         toks = string.split(data['proofSplit'])
-        
+
         # Remove empty strings, this is used to allow multiple tabs between entries
         toks = filter(None, toks)
 
@@ -341,7 +390,7 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
         linequeue.append((line, n, filename))
 
     # Create the data, used to keep track of the state of the fsm
-    data = {'queue':linequeue, 'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\n?A')}, 
+    data = {'queue':linequeue, 'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\n@A')}, 
             'state': None, 'include':'include', 'path':path, 'imported':set([filename]), 'proofDone': 'done', 
             'infDone': 'done', 'proofSplit': '\t', 'supportSplit': ',', 'comment': '#'}
 
@@ -379,26 +428,83 @@ class LineError(Exception):
     pass
 
 if __name__ == '__main__':
-    
+
     sen1 = prefixSentenceParser('A')
     sen2 = prefixSentenceParser('@B')
-    
+
     print sen1
     print sen2
-    
+
     print sen1.mapInto(sen2)
     print sen2.mapInto(sen1)
-    
+
     sen3 = prefixSentenceParser('not(@A)')
     sen4 = prefixSentenceParser('not(or(A,not(A)))')
-    
+
     print sen3
     print sen4.generalize()
-    
+
     print sen3.mapInto(sen4)
     print sen4.mapInto(sen3)    
-    
+
     sen5 = prefixSentenceParser('not(not(@A))')
-    
+
     print sen5
 
+    sen6 = prefixSentenceParser('=(+(?x, ?y), ?z)')
+
+    sen7 = prefixSentenceParser('=(+(?a, ?b), ?c)')
+
+    print sen6 < sen7, sen6 <= sen7, sen6 == sen7, sen6 >= sen7, sen6 > sen7
+    print sen7 < sen6, sen7 <= sen6, sen7 == sen6, sen7 >= sen6, sen7 > sen6
+
+    import sentence
+
+    def normalize(sen, data):
+        if 'index' not in data:
+            data['index'] = 0
+
+        if isinstance(sen, sentence.Variable):
+            sen = sentence.Variable(chr(data['index'] + ord('a')))
+            data['index'] += 1
+
+        return sen
+
+
+    print sen6.applyFunction(normalize)
+
+    def subsitute(sen, data):
+        if sen in data:
+            return data[sen]
+        return sen
+
+    print sen7.applyFunction(subsitute, {prefixSentenceParser('?a'):prefixSentenceParser('*(2,3)')})
+
+    emptySen = prefixSentenceParser('')
+
+    print emptySen, emptySen.op(), emptySen.arity()
+
+    emptyArg = prefixSentenceParser('|-(,A)')
+
+    print "'%r', '%r', '%r'" % (emptyArg, emptyArg[0], emptyArg[1])
+
+    sen8 = prefixSentenceParser('ForAll[?x](?P[?x])')
+
+    sen9 = prefixSentenceParser('ForAll[x](if(A(x),B(x)))')
+
+    print sen8, prefixSentenceParser('?x') in sen8
+    print sen8[1].subsitute({prefixSentenceParser('?x'):prefixSentenceParser('a')})
+
+    print sen8 < sen9
+
+    def cornner(sen, data):
+        data['str'] += '<' + str(sen) + '>'
+        return sen
+
+    data = {'str':''}
+    sen8.applyFunction(cornner, data)
+    print data['str']
+    
+    sen10 = prefixSentenceParser('?P[@x]')
+    
+    print sen10

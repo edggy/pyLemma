@@ -1,0 +1,134 @@
+()
+[]
+?
+@
+
+not(A)
+	operator 'not' with 'A' as the only argument
+	
+and(A, A)
+	operator 'and' with 'A' as arguments exactly twice
+	
+and(A, B)
+	operator 'and' with only 'A' and 'B' as arguments in that order
+	
+not(?A)
+	operator 'not' with one argument, must be atomic
+	< not(A)
+	< not(B)
+	< not(C)
+	
+and(?A, ?A)
+	operator 'and' with the same arguent twice, must be atomic
+	< and(A, A)
+	< and(B, B)
+	< and(C, C)
+	
+and(?A, ?B)
+	operator 'and' with any two arguments, must be atomic
+	< and(P, Q)
+	< and(P, P)
+	< and(A, B)
+	< and(B, A)
+	
+not(@A)
+	operator 'not' with one argument
+	< not(A)
+	< not(?A)
+	< not(and(P, Q))
+	< not(not(A))
+	
+and(@A, @A)
+	operator 'and' with the same arguent twice
+	< and(?A, ?A)
+	< and(B, B)
+	< and(or(A, B), or(A, B))
+	
+and(@A, @B)
+	operator 'and' with any two arguments
+	< and(P, @Q)
+	< and(?P, ?P)
+	< and(A, B)
+	< and(B, A)
+	< and(or(A, B), C)
+	
+?P(A)
+	An arbitrary operator with 'A' as the only argument
+	< not(A)
+	< f(A)
+	< P(A)
+	
+?P(A, A)
+	An arbitrary operator with 'A' as arguments exactly twice
+	< and(A, A)
+	< f(A, A)
+	< or(A, A)
+	
+?P(A, B)
+	An arbitrary operator with only 'A' and 'B' as arguments in that order
+	< and(A, B)
+	< f(A, B)
+	< or(A, B)
+	
+?P(?A)
+	An arbitrary operator with one argument, must be atomic
+	< not(A)
+	< not(B)
+	< f(a)
+	
+?P(?A, ?A)
+	An arbitrary operator with the same arguent twice, must be atomic
+	< and(A, A)
+	< and(B, B)
+	< or(A, A)
+	< f(Z, Z)
+	
+?P(?A, ?B)
+	An arbitrary operator with any two arguments, must be atomic
+	< and(A, A)
+	< and(P, Q)
+	< Q(w, e)
+	
+?P(@A)
+	An arbitrary operator with one argument
+	< and(?Q, P)
+	< or(not(Even(?f(?a, ?b))), Prime(?a))
+	
+?P(@A, @A)
+	An arbitrary operator with the same arguent twice
+	< Taller(bram, bram)
+	
+?P(@A, @B)
+	An arbitrary operator with any two arguments
+	< Taller(bram, ?x)
+
+ForAll[x](?P[x])
+	'x' is constrained to the 'ForAll' and ?P has a free variable 'x'
+	< ForAll[x](A)
+	< ForAll[x](A(x))
+	< ForAll[x](A(s(x)))
+	
+P[a]
+	operator 'P' with 'a' as arguments at least once, at some depth i.e. 'a' in 'P[a]' == True
+	< P(a)
+	< P(A(a), B)
+	< P(B(s(a)), A(b))
+
+and[A, B]
+	operator 'and' that contain 'A' and 'B' i.e. 'A' in and[A, B] and 'B' in and[A, B] == True
+	< and(A, B)
+	< and(B, A)
+	< and(A(x), B(s(x)), C)
+
+?P[A, B]
+	an arbitrary operator that contain 'A' and 'B' i.e. 'A' in '?P[A, B]' and 'B' in '?P[A, B]' == True
+	< and(A, B)
+	< and(B, A)
+	< and(A, B, C)
+	< or(A, B)
+	< or(B, A)
+	< or(A, B, C)
+	< or(A(x), B(s(x)), not(C))
+	
+	
+	

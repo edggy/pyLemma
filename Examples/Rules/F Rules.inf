@@ -1,112 +1,112 @@
 inference
 Reit
-?A
+@A
 #-----
-?A
+@A
 done
 
 inference
 Not Intro
-|-(?A, Contradiction)
+|-(@A, Contradiction)
 #------
-not(?A)
+not(@A)
 done
 
 inference
 Not Elim
-not(not(?A))
+not(not(@A))
 #-----
-?A
+@A
 done
 
 inference
 And Intro
-?A
-?B
+@A
+@B
 #------
-and(?A,?B)
+and(@A,@B)
 done
 
 inference
 And Elim Left
-and(?A,?B)
+and(@A,@B)
 #------
-?A
+@A
 done
 
 inference
 And Elim Right
-and(?A,?B)
+and(@A,@B)
 #------
-?B
+@B
 done
 
 inference
 Or Intro Left
-?A
+@A
 #----
-or(?A,?B)
+or(@A,@B)
 done
 
 inference
 Or Intro Right
-?B
+@B
 #----
-or(?A,?B)
+or(@A,@B)
 done
 
 inference
 Or Elim
-or(?A,?B)
-|-(?A,?C)
-|-(?B,?C)
+or(@A,@B)
+|-(@A,@C)
+|-(@B,@C)
 #-------
-?C
+@C
 done
 
 inference
 If Intro
-|-(?A,?B)
+|-(@A,@B)
 #-------
-if(?A,?B)
+if(@A,@B)
 done
 
 inference
 If Elim
-if(?A,?B)
-?A
+if(@A,@B)
+@A
 #-----
-?B
+@B
 done
 
 inference
 Iff Intro
-|-(?A,?B)
-|-(?B,?A)
+|-(@A,@B)
+|-(@B,@A)
 #------
-iff(?A,?B)
+iff(@A,@B)
 done
 
 inference
 Iff Elim Left
-iff(?A,?B)
-?A
+iff(@A,@B)
+@A
 #------
-?B
+@B
 done
 
 inference
 Iff Elim Right
-iff(?A,?B)
-?B
+iff(@A,@B)
+@B
 #------
-?A
+@A
 done
 
 inference
 Contradiction Intro
-?A
-not(?A)
+@A
+not(@A)
 #-------
 Contradiction
 done
@@ -115,5 +115,5 @@ inference
 Contradiction Elim
 Contradiction
 #-------
-?A
+@A
 done

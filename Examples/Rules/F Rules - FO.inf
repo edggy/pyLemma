@@ -2,30 +2,115 @@ include F Rules.inf
 
 inference
 ForAll Intro
-|-(, ?f(?a))	$?a
+|-(, @P[?a])		$?a
 #----
-ForAll(?x, ?f(?x))
+ForAll[?x](@P[?x])
 done
 
 inference
 ForAll Elim
-ForAll(?x, ?f(?x))
+ForAll[?x](@P[?x])
 #----
-?f(?a)
+@P[@a]
 done
 
 inference
 Exists Intro
-?f(?a)
+@P[?a]
 #----
-Exists(?x, ?f(?x))
+Exists[?x](@P[?x])
 done
 
 inference
 Exists Elim
-Exists(?x, ?f(?x))
-|-(?f(?a), ?Q)	$?a
+Exists[?x](@P[?x])
+|-(@P[?a], @Q)		$?a
 #----
-?Q
+@Q
 done
+
+inference
+= Intro
+#----
+=(@a, @a)
+done
+
+inference
+= Elim
+=(@a, @b)
+@P[@a]
+#----
+@P[@b]
+done
+
+# inference
+# ForAll Intro 1
+# |-(, ?f(?A(?a)))	$?a
+# #----
+# ForAll(?x, ?f(?A(?x)))
+# done
+
+# inference
+# ForAll Intro 2 Left
+# |-(, ?f(?A(?a), ?b))	$?a
+# #----
+# ForAll(?x, ?f(?A(?x), ?b))
+# done
+
+# inference
+# ForAll Intro 2 Right
+# |-(, ?f(?a, ?B(?b)))	$?b
+# #----
+# ForAll(?x, ?f(?a, ?B(?x)))
+# done
+
+# inference
+# ForAll Intro 2 Both
+# |-(, ?f(?A(?a), ?B(?a)))	$?a
+# #----
+# ForAll(?x, ?f(?A(?x), ?B(?x)))
+# done
+
+# inference
+# ForAll Elim 1
+# ForAll(?x, ?f(?A(?x)))
+# #----
+# ?f(?A(?a))
+# done
+
+# inference
+# ForAll Elim 2 Left
+# ForAll(?x, ?f(?A(?x), ?b))
+# #----
+# ?f(?A(?a), ?b)
+# done
+
+# inference
+# ForAll Elim 2 Right
+# ForAll(?x, ?f(?a, ?B(?x)))
+# #----
+# ?f(?a, ?B(?B))
+# done
+
+# inference
+# ForAll Elim 2 Both
+# ForAll(?x, ?f(?A(?x), ?B(?x)))
+# #----
+# ?f(?A(?a), ?B(?a))
+# done
+
+# inference
+# Exists Intro
+# ?f(?a)
+# #----
+# Exists(?x, ?f(?x))
+# done
+
+# inference
+# Exists Elim
+# Exists(?x, ?f(?x))
+# |-(?f(?a), ?Q)	$?a
+# #----
+# ?Q
+# done
 

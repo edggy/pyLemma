@@ -1,0 +1,79 @@
+include Rules/F Rules - FO.inf
+
+proof
+"Problem 1" - Sub 2
+1	if(A(a), B(a))				Assumption
+2	if(B(a), C(a))				Assumption
+3	A(a)						Assumption
+4	B(a)						If Elim					1,3
+5	C(a)						If Elim					2,4
+done
+
+proof
+"Problem 1" - Sub 1
+1	ForAll[x](if(A(x), B(x)))	Assumption
+2	ForAll[x](if(B(x), C(x)))	Assumption
+3	if(A(a), B(a))				ForAll Elim				1
+4	if(B(a), C(a))				ForAll Elim				2
+5	|-(A(a), C(a))				"Problem 1" - Sub 2		3,4
+6	if(A(a), C(a))				If Intro				5
+done
+
+proof
+"Problem 1"
+1	ForAll[x](if(A(x), B(x)))	Assumption
+2	ForAll[x](if(B(x), C(x)))	Assumption
+3	|-(,if(A(a), C(a)))			"Problem 1" - Sub 1		1,2
+.	ForAll[x](if(A(x), C(x)))	ForAll Intro			3
+done
+
+proof
+"Problem 2" - Sub 1
+1	ForAll[x](if(A(x), and(B(x), C(x))))	Assumption
+2	ForAll[x](if(A(x), not(C(x))))			Assumption
+3	A(a)									Assumption
+4	if(A(a), and(B(a), C(a)))				ForAll Elim				1
+5	if(A(a), not(C(a)))						ForAll Elim				2
+6	and(B(a), C(a))							If Elim					3,4
+7	not(C(a))								If Elim					3,5
+8	C(a)									And Elim Right			6
+.	Contradiction							Contradiction Intro		7,8
+done
+
+proof
+"Problem 2"
+1	ForAll[x](if(A(x), and(B(x), C(x))))	Assumption
+2	ForAll[x](if(A(x), not(C(x))))			Assumption
+3	|-(A(a), Contradiction)					"Problem 2" - Sub 1		1,2
+.	not(A(a))								Not Intro				3
+done
+
+proof
+"Problem 3"
+1	ForAll[x](if(A(x), ForAll[y](B(x, y))))		Assumption
+2	A(b)										Assumption
+3	if(A(b), ForAll[y](B(b, y)))				ForAll Elim		1
+.	ForAll[y](B(b, y))							If Elim			2,3
+done
+
+proof
+"Problem 4" - Sub 1
+1	ForAll[x](if(B(x), C(x)))							Assumption
+2	Exists[y](and(A(y), B(y)))							Assumption
+3	and(A(a), B(a))										Assumption
+4	A(a)												And Elim Left			3
+5	B(a)												And Elim Right			3
+6	if(B(a), C(a))										ForAll Elim				1
+7	C(a)												If Elim					5,6
+8	and(A(a), C(a))										And Intro				4,7
+.	Exists[z](and(A(z), C(z)))							Exists Intro			8
+done
+
+proof
+"Problem 4"
+1	ForAll[x](if(B(x), C(x)))							Assumption
+2	Exists[y](and(A(y), B(y)))							Assumption
+3	|-(and(A(a), B(a)), Exists[z](and(A(z), C(z))))		"Problem 4" - Sub 1		1,2
+.	Exists[z](and(A(z), C(z)))
+done
+

@@ -1,0 +1,31 @@
+include F Rules - FO.inf
+
+inference
+ForAll Intro
+|-(, ?P[?A(?a)])		$?a
+#----
+ForAll[?X](?P[?X(?a)])
+done
+
+inference
+ForAll Elim
+ForAll[?X](?P[?X(?a)])
+#----
+?P[?A(?a)]
+done
+
+inference
+Exists Intro
+?P[?A(?a)]
+#----
+Exists[?X](?P[?X(?a)])
+done
+
+inference
+Exists Elim
+Exists[?X](?P[?X(?a)])
+|-(?P[?A(?a)], ?Q)		$?a
+#----
+?Q
+done
+
