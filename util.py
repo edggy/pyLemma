@@ -27,7 +27,12 @@ def mapMerge(mappingA, mappingB):
     for b in mappingB:
         # If it is already in the merge and their values are not equal then no merge exists
         if b in merge and mappingB[b] != merge[b]:
-            return {}
+            if mappingB[b] <= merge[b]:
+                pass
+            elif merge[b] <= mappingB[b]:
+                continue
+            else:
+                return {}
         # Otherwise add it to the merge
         merge[b] = mappingB[b]
 

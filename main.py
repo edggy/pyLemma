@@ -41,9 +41,9 @@ try:
             print 'Invalid:\tError on line %d' % valid
             print '--------------------------\n'
 
-    #for proof in tstPrf:
-        # Print each proof that was parsed
-    #    print proof	
+    for proofName in tstPrf:
+        #Print the name of each proof that was parsed
+        print proofName	
 
     done = False
     while not done:
