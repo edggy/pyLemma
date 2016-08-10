@@ -2,16 +2,16 @@ include F Rules - FO.inf
 
 inference
 ForAll Intro
-|-(, ?P[?A(?a)])		$?a
+|-(, ?A[@a])		$?A
 #----
 ForAll[?X](?P[?X(?a)])
 done
 
 inference
 ForAll Elim
-ForAll[?X](?P[?X(?a)])
+ForAll[?X](?X[@a])
 #----
-?P[?A(?a)]
+?A[@a]
 done
 
 inference
@@ -24,7 +24,7 @@ done
 inference
 Exists Elim
 Exists[?X](?P[?X(?a)])
-|-(?P[?A(?a)], ?Q)		$?a
+|-(?P[?A(?a)], ?Q)		$?A
 #----
 ?Q
 done

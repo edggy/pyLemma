@@ -210,9 +210,12 @@ class Proof:
             return False
 
         # put all of the reference sentences into a list
-        refSenList = []
+        refLines = []
         for r in ref:
-            refSenList.append(r().getSentence())
+            try:
+                refLines.append(r())
+            except ReferenceError:
+                return False            
 
         premises = self.getPremises()
 
@@ -225,18 +228,20 @@ class Proof:
         if sen.op() == '|-':
             # Add the subproof assumption to the reference list
             if str(sen.args()[0]) != '':
-                refSenList.append(sen.args()[0])
+                assumption = line.Line(self)
+                assumption.setSentence(sen.args()[0])
+                refLines.append(assumption)
 
             # We are trying to prove the second part
             sen = sen.args()[1]		
 
-        # If we have variables that we need to be new
-            if newVars is not None:
-                for s in refSenList:
-                    for var in newVars:
-                        # Check each sentence to see if it contains the "new" variable
-                        if var in s:
-                            return False	
+        ## If we have variables that we need to be new
+            #if newVars is not None:
+                #for s in refSenList:
+                    #for var in newVars:
+                        ## Check each sentence to see if it contains the "new" variable
+                        #if var in s:
+                            #return False	
 
         prevSens = []
         metaSen = None
@@ -247,44 +252,44 @@ class Proof:
             # Check if the current sentence can map into the conclusion
             for conclusionMap in curSen.mapInto(sen):
                 # Try to map the assumptions to the refSenList
-                mapping = self.makeMapping(conclusionMap, genPrem, refSenList)
+                mapping = self.makeMapping(conclusionMap, genPrem, refLines)
                 if len(mapping) > 0:
                     # If there is a mapping then we are done
                     return True
         return False
 
-    def makeMapping(self, conclusionMap, premises, sentences, exact = True):
+    def makeMapping(self, conclusionMap, premises, references, exact = True):
         '''
-        Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
+        Try to map all of the premises into the references in any combination while being constrained by the current conclusionMap
 
-        @param conclusionMap - The current mapping of variables into sentences
+        @param conclusionMap - The current mapping of variables into references
         @param premises - A list of premises
-        @param sentences - A list of sentences to be mapped into
+        @param references - A list of references (lines) to be mapped into
 
-        @return - A map of subsitutions of variables in premises that will make premises match all the sentences
+        @return - A map of subsitutions of variables in premises that will make premises match all the references
         '''
         # If there are no premises, there is nothing else to map
         if premises is None or len(premises) == 0:
             return conclusionMap
 
-        # If there are more premises than sentences, there is no mapping
-        if (exact and len(premises) != len(sentences)) or len(premises) > len(sentences):
+        # If there are more premises than references, there is no mapping
+        if (exact and len(premises) != len(references)) or len(premises) > len(references):
             return {}
 
         # Add all the premises to the queue
         premiseQueue = deque(premises)
 
         # Call the makeMappingHelper that will recursively find a mapping
-        return self.makeMappingHelper(conclusionMap, premiseQueue, sentences)	
+        return self.makeMappingHelper(conclusionMap, premiseQueue, references)	
 
 
-    def makeMappingHelper(self, conclusionMap, premiseQueue, sentences):
+    def makeMappingHelper(self, conclusionMap, premiseQueue, references):
         '''
-        Try to map all of the premises into the sentences in any combination while being constrained by the current conclusionMap
-        @param conclusionMap - The current mapping of variables into sentences
+        Try to map all of the premises into the references in any combination while being constrained by the current conclusionMap
+        @param conclusionMap - The current mapping of variables into references
         @param premiseQueue - A queue of the premises
-        @param sentences - A list of sentences to be mapped into
-        @return - A map of subsitutions of variables in premises that will make premises match all the sentences
+        @param references - A list of references (lines) to be mapped into
+        @return - A map of subsitutions of variables in premises that will make premises match all the references
         '''	
 
         try:
@@ -294,9 +299,15 @@ class Proof:
             # Base case, the queue is empty
             return conclusionMap
 
-        for curSen in sentences:
-            # Try find a mapping of curPrem into curSen
-            for mapping in curPrem.mapInto(curSen, False):
+        for curLine in references:
+            
+            # Try find a mapping of curPrem into curLine
+            for mapping in curPrem.mapInto(curLine.getSentence(), False):
+
+                if 'extra' in curPrem.extraData and 'newVars' in curPrem.extraData['extra']:
+                    newVars = curPrem.extraData['extra']['newVars']
+                    if not curLine.isNew([mapping[v] for v in newVars]):
+                        continue                
 
                 # try to merge this mapping into conclusionMap
                 merge = util.mapMerge(conclusionMap, mapping)
@@ -305,7 +316,7 @@ class Proof:
                     continue
                 
                 # If the merge is successful recursively call makeMappingHelper for the merged map, and the remainder of the premiseQueue
-                remainder = self.makeMappingHelper(merge, premiseQueue, sentences)
+                remainder = self.makeMappingHelper(merge, premiseQueue, references)
     
                 if len(remainder) == 0:
                     continue
@@ -313,7 +324,7 @@ class Proof:
                 # If we can map the remaining premises, this is a valid mapping, return it
                 return remainder
 
-        # If we get here then curPrem can't map inro any of the sentences  
+        # If we get here then curPrem can't map inro any of the references  
         # Put the curPrem back into the queue in case we are still in the recursion
         premiseQueue.append(curPrem)
 

@@ -85,7 +85,7 @@ class Sentence:
         return printers.prefixSentencePrinter(self, self.extraData)
 
     def __hash__(self):
-        return hash(self._data)
+        return hash(self._data) * hash(type(self))
 
     def __len__(self):
         '''
@@ -138,9 +138,10 @@ class Sentence:
         if other is None or self.arity() != other.arity():
             return []
 
-        result = {}
+        results = [{}]
         for m, n in zip(self, other):
             madeMapping = False
+            newResults = []
             # For each argument, try to map it into the other argument recursively
             for mapping in m.mapInto(n):
 
@@ -148,14 +149,18 @@ class Sentence:
                 if not mapping: 
                     continue
     
-                # Merge the mapping into the results
-                result = util.mapMerge(result, mapping)
-                madeMapping = True
-                break
+                
+                for res in results:
+                    # Merge the mapping into the results
+                    newResult = util.mapMerge(res, mapping)
+                    if len(newResult) > 0:
+                        newResults.append(newResult)
+                        madeMapping = True
+            results = newResults
             
-            if not madeMapping:
-                return []
-        return [result]
+        if not madeMapping:
+            return []
+        return results
 
     def applyFunction(self, function, data = None):
         '''
@@ -374,8 +379,8 @@ class Wff(Sentence):
 
     def subsitute(self, mapping, replaceAll = True):
         if self in mapping:
-            return mapping[self]
-        return self
+            return [mapping[self]]
+        return [self]
 
     def generalize(self):
         # Already generalized
@@ -530,7 +535,7 @@ class Operator(Sentence):
                 if mapping is None:
                     continue
     
-                subs = arg.subsitute(mapping)
+                subs = arg.subsitute(mapping)[0]
                 # Example 1 -> 
                 # subs = 'if(A(s(a)),B(s(b)))'
                 #      = 'A(s(a))'
@@ -682,7 +687,7 @@ if __name__ == '__main__':
     import parsers
     
     psp = parsers.prefixSentenceParser    
-    '''
+    
     printer = lambda sen: printers.prefixSentencePrinter(sen)
 
     sf = SentenceFactory()
@@ -738,8 +743,24 @@ if __name__ == '__main__':
     testSens(sen8, sen3)
     testSens(sen8, sen5)    
     testSens(sen7, sen8)  
-    '''
+    
     sen9 = psp('@P[@b]')
     sen10 = psp('=(b, b)')
     print sen9.mapInto(sen10)
     print sen9.mapInto(sen10, False)
+    
+    sen11 = psp('@P[0]')
+    sen12 = psp('=(+(0, 0), 0)')
+    
+    print sen11.mapInto(sen12, False)
+    
+    sen13 = psp('|-(@P[?c], @P[s(?c)])')
+    sen14 = psp('|-(A(B(C, a), a), A(B(C, s(a)), s(a)))')
+    
+    testSens(sen13, sen14)
+    
+    sen15 = psp('|-(@P[?a], @P[s(?a)])')
+    sen16 = psp('|-(P(b, a), P(s(b), a))')    
+     
+    testSens(sen15, sen16)
+    

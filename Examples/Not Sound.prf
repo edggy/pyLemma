@@ -1,0 +1,15 @@
+include Rules/F Rules - FO.inf
+
+proof
+"Not Sound" - Sub 1
+1	A(a)	Assumption
+done
+
+proof
+"Not Sound"
+1	A(a)				Assumption
+2	|-(, A(a))			"Not Sound" - Sub 1		1
+3	ForAll(x, A(x))		ForAll Intro			2
+done
+
+

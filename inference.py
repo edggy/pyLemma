@@ -106,20 +106,23 @@ class Inference(proof.Proof):
                 return False
     
             # Put all of the sentences into a list
-            senList = []
+            refList = []
             for r in ref:
-                senList.append(r().getSentence())
+                try:
+                    refList.append(r())
+                except ReferenceError:
+                    return False
     
             # If we have variables that we need to be new
-            if self._newVars is not None:
-                for l in [r() for r in ref]:
-                    for var in self._newVars:
-                        # Check each line to see if it contains the "new" variable
-                        if var in l:
-                            return False
+            #if self._newVars is not None:
+                #for l in [r() for r in ref]:
+                    #for var in self._newVars:
+                        ## Check each line to see if it contains the "new" variable
+                        #if var in l:
+                            #return False
     
             # For each premise we need it to match at least one reference
-            mapping = self.makeMapping(conclusionMap, self._premises, senList)
+            mapping = self.makeMapping(conclusionMap, self._premises, refList)
             
             # Return True if a mapping exists
             if len(mapping) > 0:

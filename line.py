@@ -25,7 +25,7 @@ class Line:
         self._num = None
 
         # Other data that this line may have
-        self._data = None
+        self._data = {}
 
     def __iadd__(self, other):
         '''
@@ -123,6 +123,8 @@ class Line:
 
         # set the sentence
         self._sentence = sen
+        
+        self._data['sen'] = self._sentence.extraData
 
     def getSentence(self):
         '''
@@ -169,4 +171,21 @@ class Line:
         Returns the set of support steps
         '''
         return self._support
+    
+    def isNew(self, variables = None):
+        if variables is None:
+            variables = self._data['sen']['newVars']
+            
+        for ref in self._support:
+            try:
+                refLine = ref()
+                for var in variables:
+                    if var in refLine._sentence:
+                        return False
+            except ReferenceError:
+                pass
+            
+        return True
+            
+        
 
