@@ -1,0 +1,4 @@
+setEquals	ForAll(X, ForAll(Y, if(ForAll(e, iff(In(e,X), In(e,Y)))), =(X, Y)))				Assumption
+defSubset	ForAll(X, ForAll(Y, iff(Subset(X, Y), ForAll(e, iff(In(e,X), In(e,Y))))))		Assumption
+defUnion	ForAll(X, ForAll(Y, ForAll(e, iff(In(e, union(X, Y)), or(In(e,X), In(e,Y))))))	Assumption
+defInter	ForAll(X, ForAll(Y, ForAll(e, iff(In(e, Inter(X, Y)), or(In(e,X), In(e,Y))))))	Assumption

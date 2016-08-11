@@ -1,4 +1,4 @@
-include ../Rules/F Rules.inf
+include $Lemma/Rules/F Rules.inf
 
 proof
 DeMorgan's (or over not) - Sub 2
@@ -80,13 +80,13 @@ proof
 DeMorgan's (not over and) - Sub 1
 1	not(and(A, B))								Assumption
 2	not(or(not(A),not(B)))						Assumption
-3	and(not(not(A)), not(not(B)))				DeMorgan's (not over or)	2
-4	not(not(A))									And Elim Left				3
-5	not(not(B))									And Elim Right				3
-6	A											Not Elim					4
-7	B											Not Elim					5
-8	and(A, B)									And Intro					6,7
-.	Contradiction								Contradiction Intro			1,8
+3	and(not(not(A)), not(not(B)))				DeMorgan's (not over or)			2
+4	not(not(A))									And Elim Left						3
+5	not(not(B))									And Elim Right						3
+6	A											Not Elim							4
+7	B											Not Elim							5
+8	and(A, B)									And Intro							6,7
+.	Contradiction								Contradiction Intro					1,8
 done
 
 proof

@@ -1,0 +1,23 @@
+include $Lemma/Rules/F Rules.inf
+include $Lemma/F Lemmas/DeMorgans Not Or.prf
+
+proof
+DeMorgans Not And - Sub 1
+1	not(and(A, B))								Assumption
+2	not(or(not(A),not(B)))						Assumption
+3	and(not(not(A)), not(not(B)))				DeMorgans Not Or					2
+4	not(not(A))									And Elim Left						3
+5	not(not(B))									And Elim Right						3
+6	A											Not Elim							4
+7	B											Not Elim							5
+8	and(A, B)									And Intro							6,7
+.	Contradiction								Contradiction Intro					1,8
+done
+
+proof
+DeMorgans Not And
+1	not(and(A, B))								Assumption
+2	|-(not(or(not(A),not(B))), Contradiction)	DeMorgans Not And - Sub 1			1
+3	not(not(or(not(A),not(B))))					Not Intro							2
+.	or(not(A),not(B))							Not Elim							3
+done

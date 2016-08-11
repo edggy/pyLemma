@@ -122,7 +122,7 @@ class Inference(proof.Proof):
                             #return False
     
             # For each premise we need it to match at least one reference
-            mapping = self.makeMapping(conclusionMap, self._premises, refList)
+            mapping = self.makeMapping(conclusionMap, self._premises, refList, False)
             
             # Return True if a mapping exists
             if len(mapping) > 0:

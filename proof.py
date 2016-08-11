@@ -273,7 +273,7 @@ class Proof:
             return conclusionMap
 
         # If there are more premises than references, there is no mapping
-        if (exact and len(premises) != len(references)) or len(premises) > len(references):
+        if (exact and len(premises) != len(references)):
             return {}
 
         # Add all the premises to the queue

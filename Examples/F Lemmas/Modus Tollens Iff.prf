@@ -1,35 +1,35 @@
-include ../Rules/F Rules.inf
+include $Lemma/Rules/F Rules.inf
 
 proof
-Modus Tollens Iff Left - Sub 1
+MT Iff Left - Sub 1
 1	iff(A, B)				Assumption
 2	not(A)					Assumption
 3	B						Assumption
-4	A						Iff Elim Right						1,3
-.	Contradiction			Contradiction Intro					2,4
+4	A						Iff Elim Right				1,3
+.	Contradiction			Contradiction Intro			2,4
 done
 
 proof
-Modus Tollens Iff Left
+MT Iff Left
 1	iff(A, B)				Assumption
 2	not(A)					Assumption
-3	|-(B, Contradiction)	Modus Tollens Iff Left - Sub 1		1,2
-.	not(B)					Not Intro							3
+3	|-(B, Contradiction)	MT Iff Left - Sub 1			1,2
+.	not(B)					Not Intro					3
 done
 
 proof
-Modus Tollens Iff Right - Sub 1
+MT Iff Right - Sub 1
 1	iff(A, B)				Assumption
 2	not(B)					Assumption
 3	A						Assumption
-4	B						Iff Elim Left						1,3
-.	Contradiction			Contradiction Intro					2,4
+4	B						Iff Elim Left				1,3
+.	Contradiction			Contradiction Intro			2,4
 done
 
 proof
-Modus Tollens Iff Right
+MT Iff Right
 1	iff(A, B)				Assumption
 2	not(B)					Assumption
-3	|-(A, Contradiction)	Modus Tollens Iff Right - Sub 1		1,2
-.	not(A)					Not Intro							3
+3	|-(A, Contradiction)	MT Iff Right - Sub 1		1,2
+.	not(A)					Not Intro					3
 done

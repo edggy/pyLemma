@@ -560,7 +560,7 @@ class Operator(Sentence):
                 for structure in structs:
                     
                     # Ensure that we can map the operators
-                    if not op <= structure.op() or len(structure.args()) == 0:
+                    if not op <= structure.op():# or len(structure.args()) == 0:
                         continue
                 
                     mapping[op] = structure

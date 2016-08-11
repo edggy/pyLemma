@@ -451,9 +451,9 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
     
         if len(toks) > 1:
             # Get the filename to include
-            filename = os.path.normpath(toks[1].strip())
+            filename = os.path.normpath(os.path.expandvars(toks[1].strip()))
         else:
-            filename = os.path.normpath(string[len(data['include']):].strip())
+            filename = os.path.normpath(os.path.expandvars(string[len(data['include']):].strip()))
     
         # Check if it is a relative path, if it is get the absolute path
         if not os.path.isabs(filename):

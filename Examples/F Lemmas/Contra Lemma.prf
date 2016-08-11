@@ -1,0 +1,8 @@
+include $Lemma/Rules/F Rules.inf
+
+proof
+Contra Lemma
+1	P								Assumption
+2	not(P)							Assumption
+3	Contradiction					Contradiction Intro				1,2
+done

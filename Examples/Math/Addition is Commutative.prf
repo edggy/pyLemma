@@ -1,0 +1,42 @@
+include		$Lemma/Rules/F Rules - FO.inf
+include		$Lemma/F Lemmas/com eq.prf
+include		$Lemma/Math/LPA3.prf
+include		$Lemma/Math/LPA4.prf
+
+#PA3		ForAll(x, =(+(x, 0), x))							Assumption	# Def PA3
+#PA4		ForAll(x, ForAll(y, =(+(x, s(y)), s(+(x, y)))))		Assumption	# Def PA4
+#LPA3		ForAll(x, =(+(0, x), x))
+#LPA4		ForAll(x, ForAll(y, =(+(s(x), y), s(+(x, y)))))
+
+proof
++ Com - Sub 2
+include		$Lemma/Axioms/Peano Axioms.axm	3-4
+LPA4	ForAll(x, ForAll(y, =(+(s(x), y), s(+(x, y)))))			LPA4				PA3,PA4
+1		=(+(a,b),+(b,a))										Assumption
+2		ForAll(y, =(+(a, s(y)), s(+(a, y))))					ForAll Elim			PA4
+3		=(+(a,s(b)), s(+(a,b)))									ForAll Elim			2
+4		ForAll(y, =(+(s(b), y), s(+(b, y))))					ForAll Elim			LPA4
+5		=(+(s(b),a), s(+(b,a)))									ForAll Elim			4
+6		=(+(s(b),a), s(+(a,b)))									= Elim Right		1,5
+7		=(s(+(a,b)), +(s(b),a))									= Com				6
+.		=(+(a,s(b)), +(s(b),a))									= Elim Left			3,7
+done
+
+proof
++ Com - Sub 1
+include		$Lemma/Axioms/Peano Axioms.axm	3-4
+1		=(+(a,0), a)											ForAll Elim			PA3
+LPA3	ForAll(x, =(+(0, x), x))								LPA3				PA3,PA4
+2		=(+(0,a), a)											ForAll Elim			LPA3
+3		=(a, +(0,a))											= Com				2
+4		=(+(a,0), +(0,a))										= Elim Left			1,3
+5		|-(=(+(a,b),+(b,a)),=(+(a,s(b)),+(s(b),a)))				+ Com - Sub 2		PA3,PA4
+.		ForAll(y, =(+(a,y),+(y,a)))								Peano Induction		4,5
+done
+
+proof
++ Com
+include		$Lemma/Axioms/Peano Axioms.axm	3-4
+1	|-(,ForAll(y, =(+(a,y),+(y,a))))							+ Com - Sub 1		PA3,PA4
+.	ForAll(x, ForAll(y, =(+(x,y),+(y,x))))						ForAll Intro		1
+done

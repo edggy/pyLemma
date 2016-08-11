@@ -1,0 +1,27 @@
+inference
+DN Elim
+@P[not(not(@a))]
+#----
+@P[@a]
+done
+
+inference
+DN Intro
+@P[@a]
+#----
+@P[not(not(@a))]
+done
+
+inference
+DM not or
+@P[not(or(@a, @b))]
+#----
+@P[and(not(@a),not(@b))]
+done
+
+inference
+DM or not
+@P[and(not(@a),not(@b))]
+#----
+@P[not(or(@a, @b))]
+done

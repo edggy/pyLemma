@@ -1,0 +1,31 @@
+include		$Lemma/Rules/F Rules - FO.inf
+
+#  $Lemma/Axioms/Set Axioms.axm
+#setEquals	ForAll(X, ForAll(Y, if(ForAll(e, iff(In(e,X), In(e,Y)))), =(X, Y)))				Assumption
+#defSubset	ForAll(X, ForAll(Y, iff(Subset(X, Y), ForAll(e, iff(In(e,X), In(e,Y))))))		Assumption
+#defUnion	ForAll(X, ForAll(Y, ForAll(e, iff(In(e, union(X, Y)), or(In(e,X), In(e,Y))))))	Assumption
+#defInter	ForAll(X, ForAll(Y, ForAll(e, iff(In(e, Inter(X, Y)), or(In(e,X), In(e,Y))))))	Assumption
+
+include		$Lemma/F Lemmas/iff A A.prf
+
+proof
+"Subset(A,A)" - Sub 1
+.	iff(In(e,A), In(e,A))		"iff A A"
+done
+
+proof
+"Subset(A,A)"
+include		$Lemma/Axioms/Set Axioms.axm	2
+1			ForAll(Y, iff(Subset(A, Y), ForAll(e, iff(In(e,A), In(e,Y)))))					ForAll Elim				defSubset
+2			iff(Subset(A, A), ForAll(e, iff(In(e,A), In(e,A))))								ForAll Elim				1
+3			|-(, iff(In(e,A), In(e,A)))														"Subset(A,A)" - Sub 1
+4			ForAll(e, iff(In(e,A), In(e,A)))												ForAll Intro			3
+.			Subset(A,A)																		Iff Elim Right			2,4
+done
+
+proof
+include		$Lemma/Axioms/Set Axioms.axm	2
+defSubset	ForAll(X, ForAll(Y, iff(Subset(X, Y), ForAll(e, iff(In(e,X), In(e,Y))))))		Assumption
+sub1		|-(, Subset(A,A))																"Subset(A,A)"		defSubset
+.			ForAll(A, Subset(A,A))															ForAll Intro		sub1
+done

@@ -4,4 +4,4 @@ PA3		ForAll(x, =(+(x, 0), x))							Assumption	# Def PA3
 PA4		ForAll(x, ForAll(y, =(+(x, s(y)), s(+(x, y)))))		Assumption	# Def PA4
 PA5		ForAll(x, =(+(x, 0), x))							Assumption	# Def PA5
 PA6		ForAll(x, ForAll(y, =(+(x, s(y)), s(+(x, y)))))		Assumption	# Def PA6
-def<	ForAll(x, ForAll(y, iff(<(x, y), Exists(z, and(not(=(z, 0)), =(+(x, z), y))))))	Assumption	# Def <
+Def<	ForAll(x, ForAll(y, iff(<(x, y), Exists(z, and(not(=(z, 0)), =(+(x, z), y))))))	Assumption	# Def <

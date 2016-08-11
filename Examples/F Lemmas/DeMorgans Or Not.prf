@@ -1,0 +1,20 @@
+include $Lemma/Rules/F Rules.inf
+include $Lemma/F Lemmas/Contra Lemma.prf
+
+proof
+DeMorgans Or Not - Sub 1
+1	or(not(A),not(B))				Assumption
+2	and(A, B)						Assumption
+3	A								And Elim Left					2
+4	B								And Elim Right					2
+5	|-(not(A), Contradiction)		Contra Lemma					3
+6	|-(not(B), Contradiction)		Contra Lemma					4
+.	Contradiction					Or Elim							1,5,6
+done
+
+proof
+DeMorgans Or Not
+1	or(not(A),not(B))				Assumption
+2	|-(and(A, B), Contradiction)	DeMorgans Or Not - Sub 1		1
+.	not(and(A, B))					Not Intro						2
+done

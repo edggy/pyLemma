@@ -1,0 +1,15 @@
+#include		Rules/F Rules.inf
+include		Rules/Equiv Rules.inf
+
+proof
+"basic proof"
+1	or(B, not(not(A)))		Assumption
+2	or(B, A)				DN Elim				1
+done
+
+proof
+"basic proof 2"
+1	or(B, A)					Assumption
+2	not(not(or(B, A)))			DN Intro		1
+3	not(and(not(B), not(A)))	DM not or		2
+done
