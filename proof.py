@@ -4,7 +4,7 @@ import inference
 import sentence2 as sentence
 import line
 import util
-import printers
+import printers2 as printers
 
 class Proof:
     '''
