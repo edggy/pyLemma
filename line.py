@@ -1,6 +1,6 @@
 import weakref
 
-import sentence2 as sentence
+import sentence
 import proof
 
 class Line:

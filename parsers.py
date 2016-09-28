@@ -1,4 +1,4 @@
-import sentence2 as sentence
+import sentence
 
 sf = sentence.sf
 
@@ -625,7 +625,7 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
             'state': None, 'include':'include', 'assign':'set', 'split':'\t', 'subSplit':',', 'path':path, 'imported':set([filename]), 'proofDone': 'done', 
             'infDone': 'done', 'proofSplit': '\t', 'supportSplit': ',', 'comment': '#', 'range':'-'}
 
-    from sentence2 import InvalidSentenceError
+    from sentence import InvalidSentenceError
 
     while len(data['queue']) > 0:
         # Grab the next line off of the queue

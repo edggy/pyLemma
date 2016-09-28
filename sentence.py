@@ -2,7 +2,7 @@ import copy
 
 import util
 from collections import deque
-import printers2 as printers
+import printers
 
 class Sentence:
     '''

@@ -1,5 +1,5 @@
 import proof
-import printers2 as printers
+import printers
 
 class InferenceIterator:
     '''
