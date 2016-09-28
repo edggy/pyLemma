@@ -1,0 +1,18 @@
+include		$Lemma/Rules/F Rules - FO.inf
+include		$Lemma/Math/ForAll(x, not(=(s(x),x))).prf
+
+proof
+"not(=(s(1),1))" - Sub 1
+include		$Lemma/Axioms/Peano Axioms.axm	1,2			# PA1, PA2
+!	ForAll(x, not(=(s(x),x)))							"ForAll(x, not(=(s(x),x)))"		PA1, PA2
+1	=(s(1),1)											Assumption
+2	not(=(s(1),1))										ForAll Elim						!
+.	Contradiction										Contradiction Intro				1, 2
+done
+
+proof
+"not(=(s(1),1))"
+include		$Lemma/Axioms/Peano Axioms.axm	1,2			# PA1, PA2
+1	|-(=(s(1),1), Contradiction)						"not(=(s(1),1))" - Sub 1		PA1, PA2
+.	not(=(s(1),1))										Not Intro						1
+done
