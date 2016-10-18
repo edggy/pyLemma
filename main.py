@@ -14,14 +14,24 @@ if len(sys.argv) > 2 and sys.argv[2].lower() == 'nooutput':
 
 # Check if we have a valid file
 if not os.path.isfile(filename):
-    # python -m pip install easygui
+    # Try to open a file select box
     try:
-        import easygui
-        filename = easygui.fileopenbox()
+        import tkinter as tk
+        if six.PY2:
+            import tkFileDialog
+            
+            root = tk.Tk()
+            root.withdraw()            
+            filename = tkFileDialog.askopenfilename()
+        elif six.PY3:
+            from tkinter import filedialog
+            
+            root = tk.Tk()
+            root.withdraw()
+            filename = filedialog.askopenfilename()            
+            
     except ImportError, e:
-        print 'Usage %s [filename]'
-        print 'Install easygui for a file selcct dialog box or add a command line argument for the file you want to check'
-        print 'The pip command is "python -m pip install easygui"'
+        print('Invalid file')
 
 
 
