@@ -1,4 +1,4 @@
-import sentence2 as sentence
+import sentence
 
 class Operator(sentence.Sentence):
 

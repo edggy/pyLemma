@@ -1,7 +1,6 @@
 import copy
 
 import util
-from collections import deque
 import printers
 
 class Sentence:
