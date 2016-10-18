@@ -669,37 +669,37 @@ if __name__ == '__main__':
     sen2a = prefixSentenceParser('?B')
     sen2b = prefixSentenceParser('@C')
 
-    print formatStr % (sen1, 'A')
-    print formatStr % (sen2a, '?B')
-    print formatStr % (sen2b, '@C')
+    print(formatStr % (sen1, 'A'))
+    print(formatStr % (sen2a, '?B'))
+    print(formatStr % (sen2b, '@C'))
 
-    print formatStr % (sen1.mapInto(sen2a), '[]')
-    print formatStr % (sen1.mapInto(sen2b), '[]')
-    print formatStr % (sen2a.mapInto(sen1), '[{?B:A}]')
-    print formatStr % (sen2a.mapInto(sen2b), '[]')
-    print formatStr % (sen2b.mapInto(sen1), '[{@C:A}]')
-    print formatStr % (sen2b.mapInto(sen2a), '[{@C:?B}]')    
+    print(formatStr % (sen1.mapInto(sen2a), '[]'))
+    print(formatStr % (sen1.mapInto(sen2b), '[]'))
+    print(formatStr % (sen2a.mapInto(sen1), '[{?B:A}]'))
+    print(formatStr % (sen2a.mapInto(sen2b), '[]'))
+    print(formatStr % (sen2b.mapInto(sen1), '[{@C:A}]'))
+    print(formatStr % (sen2b.mapInto(sen2a), '[{@C:?B}]')    )
 
     sen3 = prefixSentenceParser('not(@A)')
     sen4 = prefixSentenceParser('not(or(A,not(A)))')
 
-    print formatStr % (sen3, 'not(@A)')
-    print formatStr % (sen4, 'not(or(A,not(A)))')
-    print formatStr % (sen4.generalize(), 'not(or(@A,not(@A)))')
+    print(formatStr % (sen3, 'not(@A)'))
+    print(formatStr % (sen4, 'not(or(A,not(A)))'))
+    print(formatStr % (sen4.generalize(), 'not(or(@A,not(@A)))'))
 
-    print formatStr % (sen3.mapInto(sen4), '[{not: not, @A: or(A,not(A))}]')
-    print formatStr % (sen4.mapInto(sen3), '[]') 
+    print(formatStr % (sen3.mapInto(sen4), '[{not: not, @A: or(A,not(A))}]'))
+    print(formatStr % (sen4.mapInto(sen3), '[]') )
 
     sen5 = prefixSentenceParser('not(not(@A))')
 
-    print formatStr % (sen5, 'not(not(@A))')
+    print(formatStr % (sen5, 'not(not(@A))'))
 
     sen6 = prefixSentenceParser('=(+(?x, ?y), ?x)')
 
     sen7 = prefixSentenceParser('=(+(?a, ?b), ?a)')
 
-    print sen6 < sen7, sen6 <= sen7, sen6 == sen7, sen6 >= sen7, sen6 > sen7
-    print sen7 < sen6, sen7 <= sen6, sen7 == sen6, sen7 >= sen6, sen7 > sen6
+    print(sen6 < sen7, sen6 <= sen7, sen6 == sen7, sen6 >= sen7, sen6 > sen7)
+    print(sen7 < sen6, sen7 <= sen6, sen7 == sen6, sen7 >= sen6, sen7 > sen6)
 
     import sentence2 as sentence
 
@@ -718,31 +718,31 @@ if __name__ == '__main__':
         return sen
 
 
-    print sen6.applyFunction(normalize)
+    print(sen6.applyFunction(normalize))
 
     def subsitute(sen, data):
         if sen in data:
             return data[sen]
         return sen
 
-    print sen7.applyFunction(subsitute, {prefixSentenceParser('?a'):prefixSentenceParser('*(2,3)')})
+    print(sen7.applyFunction(subsitute, {prefixSentenceParser('?a'):prefixSentenceParser('*(2,3)')}))
 
     emptySen = prefixSentenceParser('')
 
-    print emptySen, emptySen.op(), emptySen.arity()
+    print(emptySen, emptySen.op(), emptySen.arity())
 
     emptyArg = prefixSentenceParser('|-(,A)')
 
-    print "'%r', '%r', '%r'" % (emptyArg, emptyArg[0], emptyArg[1])
+    print("'%r', '%r', '%r'" % (emptyArg, emptyArg[0], emptyArg[1]))
 
     sen8 = prefixSentenceParser('ForAll[?x](?P[?x])')
 
     sen9 = prefixSentenceParser('ForAll[x](if(A(x),B(x)))')
 
-    print sen8, prefixSentenceParser('?x') in sen8
-    print sen8[1].subsitute({prefixSentenceParser('?x'):prefixSentenceParser('a')})
+    print(sen8, prefixSentenceParser('?x') in sen8)
+    print(sen8[1].subsitute({prefixSentenceParser('?x'):prefixSentenceParser('a')}))
 
-    print sen8 < sen9
+    print(sen8 < sen9)
 
     def cornner(sen, data):
         data['str'] += '<' + str(sen) + '>'
@@ -750,8 +750,8 @@ if __name__ == '__main__':
 
     data = {'str':''}
     sen8.applyFunction(cornner, data)
-    print data['str']
+    print(data['str'])
     
     sen10 = prefixSentenceParser('@P[s(@x)]')
     
-    print sen10
+    print(sen10)

@@ -13,6 +13,7 @@ class Sentence:
         '''
         @param op - The main operator of the sentence
         @param args - A tuple of the arguments of the main operator
+        @param data - An optional argument to store extra data in the Sentence
         '''
 
         # _data is a list starting with the operator followed by the arguments
@@ -703,37 +704,37 @@ if __name__ == '__main__':
     sen4 = sen1.subsitute({var1:var2, var2:var1})[0]
 
     def testSens(senA, senB):
-        print "'%s'.mapInto('%s') = %s" % (senA, senB, senA.mapInto(senB))
-        print "'%s'.mapInto('%s') = %s" % (senB, senA, senB.mapInto(senA))
-        print '%s <  %s:' % (senA, senB), senA < senB
-        print '%s <= %s:' % (senA, senB), senA <= senB
-        print '%s == %s:' % (senA, senB), senA == senB
-        print '%s != %s:' % (senA, senB), senA != senB
-        print '%s >= %s:' % (senA, senB), senA >= senB
-        print '%s >  %s:' % (senA, senB), senA > senB	
+        print("'%s'.mapInto('%s') = %s" % (senA, senB, senA.mapInto(senB)))
+        print("'%s'.mapInto('%s') = %s" % (senB, senA, senB.mapInto(senA)))
+        print('%s <  %s:' % (senA, senB), senA < senB)
+        print('%s <= %s:' % (senA, senB), senA <= senB)
+        print('%s == %s:' % (senA, senB), senA == senB)
+        print('%s != %s:' % (senA, senB), senA != senB)
+        print('%s >= %s:' % (senA, senB), senA >= senB)
+        print('%s >  %s:' % (senA, senB), senA > senB	)
 
-    print sen1, len(sen1)
-    print sen2, len(sen2)
-    print sen3, len(sen3)
-    print
+    print(sen1, len(sen1))
+    print(sen2, len(sen2))
+    print(sen3, len(sen3))
+    print()
     testSens(sen1, sen2)
-    print sen1.subsitute({var1:sen1})
-    print
+    print(sen1.subsitute({var1:sen1}))
+    print()
     testSens(sen1, sen3)
-    print
+    print()
     testSens(sen3, sen1)
-    print
+    print()
     testSens(sen1, sen4)
-    print
+    print()
     testSens(sen4, sen1)    
 
     
     sen5 = psp('if(A(s(a)),B(s(b)))')
     sen6 = psp('if(A(s(a)),B(s(a)))')
-    print sen5.terms()
-    print sen5.subSentences()
-    print sen6.terms()
-    print sen6.subSentences()    
+    print(sen5.terms())
+    print(sen5.subSentences())
+    print(sen6.terms())
+    print(sen6.subSentences())
     
     sen7 = psp('@P[?x]')
     sen8 = psp('@P[@x]')
@@ -745,13 +746,13 @@ if __name__ == '__main__':
     
     sen9 = psp('@P[@b]')
     sen10 = psp('=(b, b)')
-    print sen9.mapInto(sen10)
-    print sen9.mapInto(sen10, False)
+    print(sen9.mapInto(sen10))
+    print(sen9.mapInto(sen10, False))
     
     sen11 = psp('@P[0]')
     sen12 = psp('=(+(0, 0), 0)')
     
-    print sen11.mapInto(sen12, False)
+    print(sen11.mapInto(sen12, False))
     
     sen13 = psp('|-(@P[?c], @P[s(?c)])')
     sen14 = psp('|-(A(B(C, a), a), A(B(C, s(a)), s(a)))')

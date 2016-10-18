@@ -3,6 +3,10 @@ import os.path
 
 import parsers
 
+# Python 3 compatibility
+import six
+from builtins import input
+
 filename = ''
 if len(sys.argv) > 1:
     filename = sys.argv[1]
@@ -45,26 +49,26 @@ try:
     validTracker = set([])
     for proof in tstPrf:
         # Print each proof that was parsed
-        print tstPrf[proof]
+        print(tstPrf[proof])
 
         # Check that it is valid
         valid = tstPrf[proof].verify()
         if valid is True:
             validTracker.add(proof)
             # If it is valid, print it
-            print 'Valid\n--------------------------\n'
+            print('Valid\n--------------------------\n')
         else:
             # If it is not valid, print the line number of the error
-            print 'Invalid:\tError on line %d' % valid
-            print '--------------------------\n'
+            print('Invalid:\tError on line %d' % valid)
+            print('--------------------------\n')
 
-    print '%s of %s are Valid'  % (len(validTracker), len(tstPrf))
+    print('%s of %s are Valid'  % (len(validTracker), len(tstPrf)))
     
     prfNamesSorted = [i for i in tstPrf]
     prfNamesSorted.sort()
     for proofName in prfNamesSorted:
         #Print the name of each proof that was parsed
-        print '%-50s%s' % (proofName, proofName in validTracker)
+        print('%-50s%s' % (proofName, proofName in validTracker))
 
     while not done:
         # Get the name of the proof to check
@@ -76,18 +80,18 @@ try:
 
 
         elif proofName in tstPrf:
-            print tstPrf[proofName]
+            print(tstPrf[proofName])
             # Check that it is valid
             valid = tstPrf[proofName].verify()
             if valid is True:
                 # If it is valid, print it
-                print 'Valid\n--------------------------\n'
+                print('Valid\n--------------------------\n')
             else:
                 # If it is not valid, print the line number of the error
-                print 'Invalid:\tError on line %d\n' % valid		
+                print('Invalid:\tError on line %d\n' % valid)	
 
         else:
-            print 'A proof with the name %s does not exist\n' % proofName
+            print('A proof with the name %s does not exist\n' % proofName)
 
 except (parsers.LineError, IOError) as e:
-    print e
+    print(e)
