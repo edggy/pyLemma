@@ -4,8 +4,21 @@ import os.path
 import parsers
 
 # Python 3 compatibility
-import six
-from builtins import input
+#import six
+#from builtins import input
+
+def isProofValid(filenameOrString):
+    try:
+        tstPrf = parsers.defaultProofParser(filenameOrString)
+        
+        for proof in tstPrf:
+            # Check that it is valid
+            if tstPrf[proof].verify() is not True:
+                # There is an error
+                return False
+        return True
+    except (parsers.LineError, IOError) as e:
+        return False   
 
 filename = ''
 if len(sys.argv) > 1:
@@ -19,23 +32,24 @@ if len(sys.argv) > 2 and sys.argv[2].lower() == 'nooutput':
 # Check if we have a valid file
 if not os.path.isfile(filename):
     # Try to open a file select box
+    import tkinter as tk
     try:
-        import tkinter as tk
-        if six.PY2:
-            import tkFileDialog
-            
-            root = tk.Tk()
-            root.withdraw()            
-            filename = tkFileDialog.askopenfilename()
-        elif six.PY3:
+        
+        import tkFileDialog
+        
+        root = tk.Tk()
+        root.withdraw()            
+        filename = tkFileDialog.askopenfilename()
+    except ImportError:    
+        try:
             from tkinter import filedialog
             
             root = tk.Tk()
             root.withdraw()
             filename = filedialog.askopenfilename()            
-            
-    except ImportError, e:
-        print('Invalid file')
+                
+        except ImportError:
+            print('Invalid file')
 
 
 
