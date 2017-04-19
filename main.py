@@ -2,6 +2,7 @@ import sys
 import os.path
 
 import parsers
+import printers
 
 # Python 3 compatibility
 #import six
@@ -63,7 +64,10 @@ try:
     validTracker = set([])
     for proof in tstPrf:
         # Print each proof that was parsed
-        print(tstPrf[proof])
+        #syntax = {'and':'({0} and {1})', 'or': '({0} or {1})', 'not':'not {0}', '+': '({0} + {1})', '*': '({0}*{1})', '=': '({0} = {1})'}
+        syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
+        #print printers.englishProofPrinter(tstPrf[proof], howToPrint=syntax)
+        print printers.defaultProofPrinter(tstPrf[proof])
 
         # Check that it is valid
         valid = tstPrf[proof].verify()
@@ -82,7 +86,7 @@ try:
     prfNamesSorted.sort()
     for proofName in prfNamesSorted:
         #Print the name of each proof that was parsed
-        print('%-50s%s' % (proofName, proofName in validTracker))
+        print('%-80s%s' % (proofName, proofName in validTracker))
 
     while not done:
         # Get the name of the proof to check
