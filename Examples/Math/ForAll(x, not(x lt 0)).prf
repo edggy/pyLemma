@@ -1,0 +1,62 @@
+include		$Lemma/Rules/F Rules - FO.inf
+include		$Lemma/Math/if(=(+(x, y),0), and(=(x, 0),=(y, 0))).prf
+
+proof
+"ForAll(x, not(x < 0))" - Sub 3
+include		$Lemma/Axioms/Peano Axioms.axm	1								# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3								# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4								# Def PA4
+1	and(not(=(b, 0)), =(+(a, b), 0))										Assumption
+2	not(=(b, 0))															And Elim Left								1
+3	=(+(a, b), 0)															And Elim Right								1
+4	ForAll(x, ForAll(y, if(=(+(x, y), 0), and(=(x, 0), =(y, 0)))))			"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))"	PA1, PA3, PA4
+5	ForAll(y, if(=(+(a, y), 0), and(=(a, 0), =(y, 0))))						ForAll Elim									4
+6	if(=(+(a, b), 0), and(=(a, 0), =(b, 0)))								ForAll Elim									5
+7	and(=(a, 0), =(b, 0))													If Elim										3, 6
+8	=(b, 0)																	And Elim Right								7
+.	Contradiction															Contradiction Intro							2, 8
+done
+
+proof
+"ForAll(x, not(x < 0))" - Sub 2
+include		$Lemma/Axioms/Peano Axioms.axm	1								# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3								# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4								# Def PA4
+include		$Lemma/Axioms/Peano Axioms.axm	7								# Def<
+1	<(a,0)																	Assumption
+2	ForAll(y, iff(<(a, y), Exists(z, and(not(=(z, 0)), =(+(a, z), y)))))	ForAll Elim							Def<
+3	iff(<(a, 0), Exists(z, and(not(=(z, 0)), =(+(a, z), 0))))				ForAll Elim							2
+4	Exists(z, and(not(=(z, 0)), =(+(a, z), 0)))								Iff Elim Left						1, 3
+5	|-(and(not(=(b, 0)), =(+(a, b), 0)), Contradiction)						"ForAll(x, not(x < 0))" - Sub 3		PA1, PA3, PA4
+.	Contradiction															Exists Elim							4, 5
+done
+
+proof
+"ForAll(x, not(x < 0))" - Sub 1	
+include		$Lemma/Axioms/Peano Axioms.axm	1								# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3								# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4								# Def PA4
+include		$Lemma/Axioms/Peano Axioms.axm	7								# Def<
+1	|-(<(a,0), Contradiction)												"ForAll(x, not(x < 0))" - Sub 2		PA1, PA3, PA4, Def<
+.	not(<(a,0))																Not Intro							1
+done
+
+proof
+"ForAll(x, not(x < 0))"
+include		$Lemma/Axioms/Peano Axioms.axm	1								# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3								# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4								# Def PA4
+include		$Lemma/Axioms/Peano Axioms.axm	7								# Def<
+1	|-(,not(<(a,0)))														"ForAll(x, not(x < 0))" - Sub 1		PA1, PA3, PA4, Def<
+.	ForAll(x, not(<(x,0)))													ForAll Intro						1
+done
+
+proof
+"ForAll(x, not(200 < 0))"
+include		$Lemma/Axioms/Peano Axioms.axm	1								# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3								# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4								# Def PA4
+include		$Lemma/Axioms/Peano Axioms.axm	7								# Def<
+1	ForAll(x, not(<(x,0)))													"ForAll(x, not(x < 0))"				PA1, PA3, PA4, Def<
+2	not(<(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(0)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))),0))			ForAll Elim		1
+done

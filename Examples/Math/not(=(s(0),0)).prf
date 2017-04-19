@@ -15,3 +15,9 @@ include		$Lemma/Axioms/Peano Axioms.axm	1			# PA1
 1	|-(=(s(0),0), Contradiction)						"not(=(s(0),0))" - Sub 1	PA1
 .	not(=(s(0),0))										Not Intro					1
 done
+
+proof
+"not(=(s(0),0)) - Teach"
+include		$Lemma/Axioms/Peano Axioms.axm	1			# PA1
+.	not(=(s(0),0))										"not(=(s(0),0))"			PA1
+done
