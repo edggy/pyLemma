@@ -33,8 +33,21 @@ if len(sys.argv) > 2 and sys.argv[2].lower() == 'nooutput':
 # Check if we have a valid file
 if not os.path.isfile(filename):
     # Try to open a file select box
-    import tkinter as tk
     try:
+        import tkinter as tk
+    except ImportError:
+        import Tkinter as tk
+        
+    try:
+        import tkFileDialog as tfd
+    except ImportError:
+        from tkinter import filedialog as tfd
+        
+    root = tk.Tk()
+    root.withdraw()
+    filename = tfd.askopenfilename()       
+        
+    '''try:
         
         import tkFileDialog
         
@@ -51,10 +64,16 @@ if not os.path.isfile(filename):
                 
         except ImportError:
             print('Invalid file')
-
+'''
 
 
 try:
+    
+    #printProof = lambda x: printers.defaultProofPrinter(x, sentencePrinter = printers.prefixSentencePrinter)
+    
+    syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
+    printProof = lambda x: printers.englishProofPrinter(x, howToPrint=syntax)
+    
     # parse the supplied file
     tstPrf = parsers.defaultProofParser(filename)
 
@@ -64,10 +83,8 @@ try:
     validTracker = set([])
     for proof in tstPrf:
         # Print each proof that was parsed
-        #syntax = {'and':'({0} and {1})', 'or': '({0} or {1})', 'not':'not {0}', '+': '({0} + {1})', '*': '({0}*{1})', '=': '({0} = {1})'}
-        syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
-        #print printers.englishProofPrinter(tstPrf[proof], howToPrint=syntax)
-        print printers.defaultProofPrinter(tstPrf[proof])
+
+        print printProof(tstPrf[proof])
 
         # Check that it is valid
         valid = tstPrf[proof].verify()
@@ -86,7 +103,7 @@ try:
     prfNamesSorted.sort()
     for proofName in prfNamesSorted:
         #Print the name of each proof that was parsed
-        print('%-80s%s' % (proofName, proofName in validTracker))
+        print('%-70s%s' % (proofName, proofName in validTracker))
 
     while not done:
         # Get the name of the proof to check
@@ -98,7 +115,8 @@ try:
 
 
         elif proofName in tstPrf:
-            print(tstPrf[proofName])
+            #print(tstPrf[proofName])
+            print printProof(tstPrf[proof])
             # Check that it is valid
             valid = tstPrf[proofName].verify()
             if valid is True:

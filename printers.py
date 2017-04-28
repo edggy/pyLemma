@@ -162,7 +162,7 @@ def defaultProofPrinter(p, printedInferences = None, inferencePrinter = None, li
     if linePrinter is None:
         linePrinter = defaultLinePrinter
     if sentencePrinter is None:
-        sentencePrinter = infixSentencePrinter
+        sentencePrinter = prefixSentencePrinter
 
     # Start with an empty string
     res = ''
