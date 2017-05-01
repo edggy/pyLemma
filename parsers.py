@@ -461,17 +461,20 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
     
         # Check to see that we have not already included this file
         if filename not in data['imported'] or keepLines is not None:
-            with open(filename) as f:
-                # Add all the new lines to the beginning of the queue
-                # e.g. q = [o1,o2,o3,o4] file = '1\n2\n3\n4\n5 -> [1,2,3,4,5,o1,o2,o3,o4]
-                lines = f.read().split('\n')
-                for n, line in enumerate(reversed(lines)):
-                    lineNum = len(lines) - n
-                    if keepLines is None or lineNum in keepLines:
-                        data['queue'].appendleft((line, lineNum, filename))
-    
-            # Add as an included file
-            data['imported'].add(filename)        
+            try:
+                with open(filename) as f:
+                    # Add all the new lines to the beginning of the queue
+                    # e.g. q = [o1,o2,o3,o4] file = '1\n2\n3\n4\n5 -> [1,2,3,4,5,o1,o2,o3,o4]
+                    lines = f.read().split('\n')
+                    for n, line in enumerate(reversed(lines)):
+                        lineNum = len(lines) - n
+                        if keepLines is None or lineNum in keepLines:
+                            data['queue'].appendleft((line, lineNum, filename))
+        
+                # Add as an included file
+                data['imported'].add(filename)       
+            except IOError as e:
+                raise LineError('%s %s' % (e.strerror, e.filename))
     
     # The function to use by default
     def init(string, data):

@@ -366,7 +366,10 @@ class Proof:
         '''
         Prints the proof using the supplied printer
         '''
-        return self._printer(self)		
+        return self._printer(self)
+    
+    def __hash__(self):
+        return hash(tuple(self._lines))
 
     def __repr__(self):
         return self._printer(self)

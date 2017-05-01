@@ -22,32 +22,28 @@ def prefixSentencePrinter(sen, symbols = None, sentencePrinter = None, isInfix =
     if sentencePrinter is None:
         sentencePrinter = prefixSentencePrinter
 
-    try:
-        # If the arity is 0, then just print the operator
-        if sen.arity() == 0:
-            return str(sen.op())
+    # If the arity is 0, then just print the operator
+    if sen.arity() == 0:
+        return str(sen.op())
 
-        # Otherwise, print the operator
-        string = str(sen.op())
+    # Otherwise, print the operator
+    string = str(sen.op())
 
-        # Followed by an open paren
-        string += symbols['openParen']
-        first = True
+    # Followed by an open paren
+    string += symbols['openParen']
+    first = True
 
-        # Then by its arguments
-        for arg in sen.args():
-            string += sentencePrinter(arg, symbols, sentencePrinter, isInfix) + symbols['seperator']
+    # Then by its arguments
+    for arg in sen.args():
+        string += sentencePrinter(arg, symbols, sentencePrinter, isInfix) + symbols['seperator']
 
-        # Remove the extra comma
-        string = string[:-1]
+    # Remove the extra comma
+    string = string[:-1]
 
-        # Followed by a close paren
-        string += symbols['closeParen']
+    # Followed by a close paren
+    string += symbols['closeParen']
 
-        return string
-
-    except AttributeError:
-        return str(sen)
+    return string
 
 def infixSentencePrinter(sen, symbols = None, sentencePrinter = None, isInfix = None):
     '''

@@ -69,10 +69,12 @@ if not os.path.isfile(filename):
 
 try:
     
-    #printProof = lambda x: printers.defaultProofPrinter(x, sentencePrinter = printers.prefixSentencePrinter)
+    printProof = lambda x: printers.defaultProofPrinter(x, sentencePrinter = printers.prefixSentencePrinter)
     
-    syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
-    printProof = lambda x: printers.englishProofPrinter(x, howToPrint=syntax)
+    #syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
+    #printProof = lambda x: printers.englishProofPrinter(x, howToPrint=syntax)
+    
+    #printProof = lambda x: printers.compressedProofPrinter(x, sentencePrinter = printers.prefixSentencePrinter)
     
     # parse the supplied file
     tstPrf = parsers.defaultProofParser(filename)

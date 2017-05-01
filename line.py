@@ -66,8 +66,8 @@ class Line:
         return printers.defaultLinePrinter(self)
 
     def __hash__(self):
-        # The hash is the hash of its string reprenstation
-        return hash(str(self))
+        # The hash is the hash of its sentence and inference
+        return hash((self._sentence, self._inference))
 
     def __contains__(self, item):
         # This checks weather item was assumed in this line
