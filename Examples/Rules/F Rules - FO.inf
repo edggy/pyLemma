@@ -59,3 +59,10 @@ Peano Induction
 ForAll(?x, @P[?x])
 done
 
+inference
+Strong Induction
+|-(ForAll(?y, if(<(?y, ?a),@P[?y])), @P[?a])
+#----
+ForAll(?x, @P[?x])
+done
+

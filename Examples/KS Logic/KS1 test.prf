@@ -1,0 +1,6 @@
+include $Lemma/Rules/KS Rules.inf
+
+proof
+Test Proof
+1	if(A, if(A,A))	KS1
+done

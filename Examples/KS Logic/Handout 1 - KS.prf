@@ -1,0 +1,12 @@
+include $Lemma/Rules/KS Rules.inf
+
+proof
+"Problem 1"
+1	and(R, and(C, not(F)))				Assumption
+2	if(or(R, S), not(W))				Assumption
+3	if(and(R, and(C, not(F))), R)		KS5
+4	R									MP				1,3
+5	if(R, or(R, S))						KS8
+6	or(R, S)							MP				4,5
+.	not(W)								MP				2,6
+done

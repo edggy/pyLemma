@@ -1,4 +1,13 @@
-include Rules/Natural Inference Rules.inf
+include $Lemma/Rules/Natural Inference Rules.inf
+
+proof
+"Problem 1"
+1	and(R, and(C, not(F)))	Assumption
+2	if(or(R, S), not(W))	Assumption
+3	R						Simp Left		1
+4	or(R,S)					Addition Left	3
+.	not(W)					MP				2,4
+done
 
 proof
 "Handout 7"
