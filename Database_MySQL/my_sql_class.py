@@ -17,7 +17,6 @@ class Database_mysql:
 				host= host,
 				database =database_name)
 
-			print("it works!")
 			self.cur = self.conn.cursor()
 				
 		except mysql.connector.Error as e:
@@ -34,13 +33,14 @@ class Database_mysql:
 	def create_hw_table(self,table_name):
 		# table_name #= "gengruijie_hw1234"#input("Please entre the table name ==> ")
 		query = "CREATE TABLE " + table_name +"""(
+												id int NOT NULL AUTO_INCREMENT,
         										LineNo varchar(11) NOT NULL,
         										Part varchar(11) NOT NULL,
         										Sentence varchar(255) NOT NULL,
         										InferenceRule varchar(255), 
 												reference varchar(11),
 												Date datetime NOT NULL,
-												primary key(LineNo)
+												primary key(id)
 												)"""
 		self.cur.execute(query)
 		self.conn.commit()
@@ -84,10 +84,10 @@ class Database_mysql:
 													CodeName varchar(255) NOT NULL,
 													PRIMARY KEY (CodeID) )
 												"""
-			print(table_name)
+			# print(table_name)
 			self.cur.execute(query)
 			self.conn.commit()
-			print(table_name)
+			# print(table_name)
 
 			query_insert = "INSERT INTO "+table_name+" (CodeName) VALUES(%s)"
 			self.cur.execute(query_insert,[hw8])
@@ -109,29 +109,31 @@ class Database_mysql:
 				# a new row for his new table. And I will create one more table to 
 				# store their code. 
 				query_insert = "INSERT INTO "+table_name+" (CodeName) VALUES(%s)"
-				self.cur.execute(query_insert,["hw8"])
+				self.cur.execute(query_insert,[hw_name])
 				self.conn.commit()
-				code_table = table_name + "_" +"hw8"
+				code_table = table_name + "_" +hw_name
 				self.create_hw_table(code_table)
 				# to add the data into the third table.
 				self.add_hw_data(code_table,info)
 			else:			
 			#	this is the situation that the students already have the code 
 			# 	#  table, I will add the data into the table directly.
-				code_table = table_name + "_" + "hw8"
+				code_table = table_name + "_" + hw_name
 				self.add_hw_data(code_table,info)
 
 
 
 		# this part I will add the code_name into the personal table. 
 		# first I will check whether the corresponding code is existing or not.
-		query = "SELECT CodeName from "+ "GengRuijie_table" + " WHERE CodeName = %s"
-		self.cur.execute(query,["hw8"])
-		check = self.cur.fetchone()
-		try:
-			useless = self.cur.fetchall()
-		except:
-			pass
+
+		# query = "SELECT CodeName from "+ "GengRuijie_table" + " WHERE CodeName = %s"
+		# self.cur.execute(query,[hw_name])
+		# check = self.cur.fetchone()
+		# try:
+		# 	useless = self.cur.fetchall()
+		# except:
+		# 	pass
+
 		# query = "INSERT INTO "+table_name+" (CodeName) VALUES (%s) "
 		# self.cur.execute(query,hw_name)
 		# self.conn.commit()
@@ -185,6 +187,9 @@ class Database_mysql:
 		info =[] # info is the data I will pass into other function to add into the table
 		file = open(file_name)
 
+		# name = search_student(student_name)
+		# print(name)
+		
 		for line in file:
 			# the first element in the info list is the part number of data. Since 
 			# part number does not appear in the file directly. I need to use code
@@ -205,31 +210,56 @@ class Database_mysql:
 			else:
 				data = line.strip().split('\t')
 				info = info+data
-				print(info)
 
 				self.add_student_hw(student_name,code_name,info)
 
 	def down_load_file(self,student_name,code_table_name,file_name):
 		id_ = self.search_student(student_name)
 		f = open(file_name,"w+")
+
+		# table_name_second = "student"+str(id_)
+		# query = "select * from "+table_name_second
+		# self.cur.execute(query)
+		# hw = self.cur.fetchall()
+		# print(hw)
+		# for i in hw:
+		# 	print(i)
+
 		table_name = "student"+str(id_)+"_"+code_table_name
 		query = "select * from "+table_name
 
 		self.cur.execute(query)
 
 		data = self.cur.fetchall()
-		part_num = data[0][0]
+		part_num = data[0][3]
 
 		f.write("proof\n")
 		for element in data:
-			part_alias_num = element[0]
+			part_alias_num = element[2]
 			if (part_alias_num != part_num):
 				f.write("done\n\nproof\n")
-			f.write("{:}\t{:}\t{:}\n".format(element[1],element[2],element[3]))
+				part_num =element[2]
+			f.write("{:}\t{:16}\t{:18}\t{:}\n".format(element[1],element[3],element[4],element[5]))
 		f.write("done")
 		f.close()
 
-				
+	def show_student(self):
+		query="SELECT * from Student"		
+		self.cur.execute(query)
+		students = self.cur.fetchall()
+		for i in students:
+			print(i[1])
+
+	def show_homework(self,name):
+		id_ = self.search_student(name)
+
+		table_name = "student"+str(id_)
+		query = "select * from "+table_name
+		self.cur.execute(query)
+		hw = self.cur.fetchall()
+		# print(hw)
+		for i in hw:
+			print(i[1])	
 
 
 
