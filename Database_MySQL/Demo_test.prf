@@ -1,0 +1,19 @@
+
+proof
+1	not(A)	Assumption	0
+2	A	Assumption	0
+3	Contradiction	Contradiction Intro	1,2
+done
+
+proof
+1	and(not(P), not(Q))	Assumption	0
+2	or(P, Q)	Assumption	0
+3	not(P)	And Elim Left	1
+4	not(Q)	And Elim Right	1
+7	Contradiction	Or Elim	2,5,6
+done
+
+proof
+1	and(not(P), not(Q))	Assumption	0
+3	not(or(P, Q))	Not Intro	2
+done
