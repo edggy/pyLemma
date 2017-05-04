@@ -1,4 +1,4 @@
-include Rules/F Rules.inf
+include $Lemma/Rules/F Rules.inf
 
 proof
 "Problem 1"
@@ -94,8 +94,8 @@ n	not(H)				Contradiction Elim		n-1
 done
 
 # Include to use in problem 6
-include F Lemmas/Excluded Middle.prf
-include F Lemmas/Modus Tollens Iff.prf
+include $Lemma/F Lemmas/Excluded Middle.prf
+include $Lemma/F Lemmas/Modus Tollens Iff.prf
 
 proof 
 "Problem 6" - Sub 4
@@ -144,8 +144,8 @@ proof
 .	not(iff(A, C))					Not Intro				3
 done
 
-include F Lemmas/Modus Tollens.prf
-include F Lemmas/Disjunctive Syllogism.prf
+include $Lemma/F Lemmas/Modus Tollens.prf
+include $Lemma/F Lemmas/Disjunctive Syllogism.prf
 
 proof 
 "Problem 7"

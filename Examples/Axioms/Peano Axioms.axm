@@ -1,7 +1,10 @@
-PA1		ForAll(x, not(=(s(x), 0)))							Assumption	# Def PA1
-PA2		ForAll(x, ForAll(y, if(=(s(x), s(y)), =(x,y))))		Assumption	# Def PA2
-PA3		ForAll(x, =(+(x, 0), x))							Assumption	# Def PA3
-PA4		ForAll(x, ForAll(y, =(+(x, s(y)), s(+(x, y)))))		Assumption	# Def PA4
-PA5		ForAll(x, =(+(x, 0), x))							Assumption	# Def PA5
-PA6		ForAll(x, ForAll(y, =(+(x, s(y)), s(+(x, y)))))		Assumption	# Def PA6
-Def<	ForAll(x, ForAll(y, iff(<(x, y), Exists(z, and(not(=(z, 0)), =(+(x, z), y))))))	Assumption	# Def <
+PA1			ForAll(x, not(=(s(x), 0)))																Assumption	# Def PA1
+PA2			ForAll(x, ForAll(y, if(=(s(x), s(y)), =(x,y))))											Assumption	# Def PA2
+PA3			ForAll(x, =(+(x, 0), x))																Assumption	# Def PA3
+PA4			ForAll(x, ForAll(y, =(+(x, s(y)), s(+(x, y)))))											Assumption	# Def PA4
+PA5			ForAll(x, =(*(x, 0), 0))																Assumption	# Def PA5
+PA6			ForAll(x, ForAll(y, =(*(x, s(y)), +(*(x, y),x))))										Assumption	# Def PA6
+Def<		ForAll(x, ForAll(y, iff(<(x, y), Exists(z, and(not(=(z, 0)), =(+(x, z), y))))))			Assumption	# Def <
+DefDiv		ForAll(x, ForAll(y, iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))				Assumption	# Def Div
+DefPrime	ForAll(x, iff(Prime(x), and(not(=(x,1)), ForAll(y, iff(Div(y,x),or(=(y,1),=(y,x)))))))	Assumption	# Def Prime
+#DefGCD		ForAll(x, ForAll(y, ForAll(z, iff(=(gcd(x,y), z), ))))	Assumption

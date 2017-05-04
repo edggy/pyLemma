@@ -1,0 +1,12 @@
+include $Lemma/Rules/KS Rules.inf
+
+proof
+MT
+1	if(A, B)										Assumption
+2	not(B)											Assumption
+3	if(if(A, B),if(if(A, not(B)), not(A)))			KS3
+4	if(if(A, not(B)), not(A))						MP				1,3
+5	if(not(B), if(A, not(B)))						KS1
+6	if(A, not(B))									MP				2,5
+.	not(A)											MP				4,6
+done

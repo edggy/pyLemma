@@ -1,0 +1,71 @@
+include		$Lemma/Rules/F Rules - FO.inf
+include		$Lemma/Math/if(=(+(x, 0), 0), =(x, 0)).prf
+include		$Lemma/Math/ForAll(x, if(not(=(x, 0)), Exists(z, =(x, s(z))))).prf
+
+proof
+"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 5
+include		$Lemma/Axioms/Peano Axioms.axm	1							# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	4							# Def PA4
+1	=(+(a, b),0)														Assumption
+2	=(b, s(c))															Assumption
+3	=(+(a, s(c)),0)														= Elim Left				1, 2
+4	ForAll(y, =(+(a, s(y)), s(+(a, y))))								ForAll Elim				PA4
+5	=(+(a, s(c)), s(+(a, c)))											ForAll Elim				4
+6	=(s(+(a, c)),0)														= Elim Left				3, 5
+7	not(=(s(+(a, c)), 0))												ForAll Elim				PA1
+.	Contradiction														Contradiction Intro		6, 7
+done
+
+proof
+"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 4
+include		$Lemma/Axioms/Peano Axioms.axm	1							# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	4							# Def PA4
+1	=(+(a, b),0)														Assumption
+2	not(=(b, 0))														Assumption
+3	Exists(z, =(b, s(z)))												"|-(not(=(a, 0)), Exists(z, =(a, s(z))))"				2
+4	|-(=(b, s(c)), Contradiction)										"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 5		PA1, PA4, 1
+.	Contradiction														Exists Elim												3, 4										
+done
+
+proof
+"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 3
+include		$Lemma/Axioms/Peano Axioms.axm	1							# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3							# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4							# Def PA4
+1	=(+(a, b),0)														Assumption
+2	|-(not(=(b, 0)), Contradiction)										"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 4		PA1, PA4, 1
+3a	not(not(=(b, 0)))													Not Intro												2
+3b	=(b, 0)																Not Elim												3a
+4	=(+(a, 0),0)														= Elim Left												1, 3b
+5	ForAll(x, if(=(+(x, 0), 0), =(x, 0)))								"if(=(+(x, 0), 0), =(x, 0))"							PA3
+6	if(=(+(a, 0), 0), =(a, 0))											ForAll Elim												5
+7	=(a, 0)																If Elim													4, 6
+.	and(=(a, 0), =(b, 0))												And Intro												3b, 7
+done
+
+proof
+"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 2
+include		$Lemma/Axioms/Peano Axioms.axm	1							# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3							# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4							# Def PA4
+1	|-(=(+(a, b), 0), and(=(a, 0), =(b, 0)))							"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 3		PA1, PA3, PA4
+.	if(=(+(a, b), 0), and(=(a, 0), =(b, 0)))							If Intro												1
+done
+
+proof
+"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 1
+include		$Lemma/Axioms/Peano Axioms.axm	1							# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3							# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4							# Def PA4
+1	|-(, if(=(+(a, b), 0), and(=(a, 0), =(b, 0))))						"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 2		PA1, PA3, PA4
+.	ForAll(y, if(=(+(a, y), 0), and(=(a, 0), =(y, 0))))					ForAll Intro											1
+done
+
+proof
+"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))"
+include		$Lemma/Axioms/Peano Axioms.axm	1							# Def PA1
+include		$Lemma/Axioms/Peano Axioms.axm	3							# Def PA3
+include		$Lemma/Axioms/Peano Axioms.axm	4							# Def PA4
+1	|-(, ForAll(y, if(=(+(a, y), 0), and(=(a, 0), =(y, 0)))))			"if(=(+(x, y),0), and(=(x, 0),=(y, 0)))" - Sub 1		PA1, PA3, PA4
+.	ForAll(x, ForAll(y, if(=(+(x, y), 0), and(=(x, 0), =(y, 0)))))		ForAll Intro											1
+done

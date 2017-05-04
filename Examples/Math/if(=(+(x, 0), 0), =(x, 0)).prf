@@ -1,0 +1,23 @@
+include		$Lemma/Rules/F Rules - FO.inf
+
+proof
+"if(=(+(x, 0), 0), =(x, 0))" - Sub 2
+include		$Lemma/Axioms/Peano Axioms.axm	3								# Def PA3
+1	=(+(a, 0), 0)															Assumption
+2	=(+(a, 0), a)															ForAll Elim									PA3
+.	=(a, 0)																	= Elim Left									1, 2
+done
+
+proof
+"if(=(+(x, 0), 0), =(x, 0))" - Sub 1
+include		$Lemma/Axioms/Peano Axioms.axm	3								# Def PA3
+1	|-(=(+(a, 0), 0), =(a, 0))												"if(=(+(x, 0), 0), =(x, 0))" - Sub 2		PA3
+.	if(=(+(a, 0), 0), =(a, 0))												If Intro									1
+done
+
+proof
+"if(=(+(x, 0), 0), =(x, 0))"
+include		$Lemma/Axioms/Peano Axioms.axm	3								# Def PA3
+1	|-(, if(=(+(a, 0), 0), =(a, 0)))										"if(=(+(x, 0), 0), =(x, 0))" - Sub 1		PA3
+.	ForAll(x, if(=(+(x, 0), 0), =(x, 0)))									ForAll Intro								1
+done

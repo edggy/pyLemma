@@ -1,0 +1,18 @@
+include		$Lemma/Rules/F Rules - FO.inf
+
+proof
+"not(Prime(1))" - Sub 1
+include		$Lemma/Axioms/Peano Axioms.axm	9												# DefPrime
+1			Prime(1)																		Assumption
+2			iff(Prime(1), and(not(=(1,1)), ForAll(y, iff(Div(y,1),or(=(y,1),=(y,1))))))		ForAll Elim				DefPrime
+3			and(not(=(1,1)), ForAll(y, iff(Div(y,1),or(=(y,1),=(y,1)))))					Iff Elim Left			1, 2
+4			not(=(1,1))																		And Elim Left			3
+5			=(1,1)																			= Intro
+.			Contradiction																	Contradiction Intro		4, 5
+done
+proof
+"not(Prime(1))"
+include		$Lemma/Axioms/Peano Axioms.axm	9			# DefPrime
+1	|-(Prime(1), Contradiction)														"not(Prime(1))" - Sub 1		DefPrime
+.	not(Prime(1))																	Not Intro					1
+done

@@ -1,0 +1,17 @@
+include		$Lemma/Rules/F Rules - FO.inf
+
+proof
+"not(=(s(1),0))" - Sub 1
+include		$Lemma/Axioms/Peano Axioms.axm	1			# PA1
+1	=(s(1),0)											Assumption
+2	not(=(s(1), 0))										ForAll Elim					PA1
+.	Contradiction										Contradiction Intro			1,2
+done
+
+
+proof
+"not(=(s(1),0))"
+include		$Lemma/Axioms/Peano Axioms.axm	1			# PA1
+1	|-(=(s(1),0), Contradiction)						"not(=(s(1),0))" - Sub 1	PA1
+.	not(=(s(1),0))										Not Intro					1
+done

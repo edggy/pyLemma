@@ -2,6 +2,24 @@ import sys
 import os.path
 
 import parsers
+import printers
+
+# Python 3 compatibility
+#import six
+#from builtins import input
+
+def isProofValid(filenameOrString):
+    try:
+        tstPrf = parsers.defaultProofParser(filenameOrString)
+        
+        for proof in tstPrf:
+            # Check that it is valid
+            if tstPrf[proof].verify() is not True:
+                # There is an error
+                return False
+        return True
+    except (parsers.LineError, IOError) as e:
+        return False   
 
 filename = ''
 if len(sys.argv) > 1:
@@ -14,18 +32,50 @@ if len(sys.argv) > 2 and sys.argv[2].lower() == 'nooutput':
 
 # Check if we have a valid file
 if not os.path.isfile(filename):
-    # python -m pip install easygui
+    # Try to open a file select box
     try:
-        import easygui
-        filename = easygui.fileopenbox()
-    except ImportError, e:
-        print 'Usage %s [filename]'
-        print 'Install easygui for a file selcct dialog box or add a command line argument for the file you want to check'
-        print 'The pip command is "python -m pip install easygui"'
-
+        import tkinter as tk
+    except ImportError:
+        import Tkinter as tk
+        
+    try:
+        import tkFileDialog as tfd
+    except ImportError:
+        from tkinter import filedialog as tfd
+        
+    root = tk.Tk()
+    root.withdraw()
+    filename = tfd.askopenfilename()       
+        
+    '''try:
+        
+        import tkFileDialog
+        
+        root = tk.Tk()
+        root.withdraw()            
+        filename = tkFileDialog.askopenfilename()
+    except ImportError:    
+        try:
+            from tkinter import filedialog
+            
+            root = tk.Tk()
+            root.withdraw()
+            filename = filedialog.askopenfilename()            
+                
+        except ImportError:
+            print('Invalid file')
+'''
 
 
 try:
+    
+    printProof = lambda x: printers.defaultProofPrinter(x, sentencePrinter = printers.prefixSentencePrinter)
+    
+    #syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
+    #printProof = lambda x: printers.englishProofPrinter(x, howToPrint=syntax)
+    
+    #printProof = lambda x: printers.compressedProofPrinter(x, sentencePrinter = printers.prefixSentencePrinter)
+    
     # parse the supplied file
     tstPrf = parsers.defaultProofParser(filename)
 
@@ -35,26 +85,27 @@ try:
     validTracker = set([])
     for proof in tstPrf:
         # Print each proof that was parsed
-        print tstPrf[proof]
+
+        print printProof(tstPrf[proof])
 
         # Check that it is valid
         valid = tstPrf[proof].verify()
         if valid is True:
             validTracker.add(proof)
             # If it is valid, print it
-            print 'Valid\n--------------------------\n'
+            print('Valid\n--------------------------\n')
         else:
             # If it is not valid, print the line number of the error
-            print 'Invalid:\tError on line %d' % valid
-            print '--------------------------\n'
+            print('Invalid:\tError on line %d' % valid)
+            print('--------------------------\n')
 
-    print '%s of %s are Valid'  % (len(validTracker), len(tstPrf))
+    print('%s of %s are Valid'  % (len(validTracker), len(tstPrf)))
     
     prfNamesSorted = [i for i in tstPrf]
     prfNamesSorted.sort()
     for proofName in prfNamesSorted:
         #Print the name of each proof that was parsed
-        print '%-50s%s' % (proofName, proofName in validTracker)
+        print('%-70s%s' % (proofName, proofName in validTracker))
 
     while not done:
         # Get the name of the proof to check
@@ -66,18 +117,19 @@ try:
 
 
         elif proofName in tstPrf:
-            print tstPrf[proofName]
+            #print(tstPrf[proofName])
+            print printProof(tstPrf[proof])
             # Check that it is valid
             valid = tstPrf[proofName].verify()
             if valid is True:
                 # If it is valid, print it
-                print 'Valid\n--------------------------\n'
+                print('Valid\n--------------------------\n')
             else:
                 # If it is not valid, print the line number of the error
-                print 'Invalid:\tError on line %d\n' % valid		
+                print('Invalid:\tError on line %d\n' % valid)	
 
         else:
-            print 'A proof with the name %s does not exist\n' % proofName
+            print('A proof with the name %s does not exist\n' % proofName)
 
 except (parsers.LineError, IOError) as e:
-    print e
+    print(e)
