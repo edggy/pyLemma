@@ -21,6 +21,17 @@ def isProofValid(filenameOrString):
     except (parsers.LineError, IOError) as e:
         return False   
 
+def parseFlags(arguments):
+    flags = {}
+    for i, arg in enumerate(arguments):
+        if arg[0] == '-' and arg[1] != '-':
+            for f in arg[1:]:
+                if i+1 < len(arguments):
+                    flags[f] = arguments[i+1]
+                else:
+                    flags[f] = ''
+    return flags
+        
 filename = ''
 if len(sys.argv) > 1:
     filename = sys.argv[1]
@@ -29,9 +40,10 @@ done = False
 if len(sys.argv) > 2 and sys.argv[2].lower() == 'nooutput':
     done = True
 
+flags = parseFlags(sys.argv)
 
 # Check if we have a valid file
-if not os.path.isfile(filename):
+if 'f' not in flags or not os.path.isfile(flags['f']):
     # Try to open a file select box
     try:
         import tkinter as tk
@@ -45,39 +57,46 @@ if not os.path.isfile(filename):
         
     root = tk.Tk()
     root.withdraw()
-    filename = tfd.askopenfilename()       
-        
-    '''try:
-        
-        import tkFileDialog
-        
-        root = tk.Tk()
-        root.withdraw()            
-        filename = tkFileDialog.askopenfilename()
-    except ImportError:    
-        try:
-            from tkinter import filedialog
-            
-            root = tk.Tk()
-            root.withdraw()
-            filename = filedialog.askopenfilename()            
-                
-        except ImportError:
-            print('Invalid file')
-'''
-
+    flags['f'] = tfd.askopenfilename()
 
 try:
+    prefix  = ['pre', 'prefix', 'p', 'd', 'default']
+    infix   = ['in', 'infix', 'i']
+    english = ['english', 'e', 'eng', 'hr', 'informal']
     
-    printProof = lambda x: printers.defaultProofPrinter(x, sentencePrinter = printers.prefixSentencePrinter)
+    for f in ['s', 'l', 'i', 'p']:
+        if f not in flags:
+            flags[f] = ''
     
-    #syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
-    #printProof = lambda x: printers.englishProofPrinter(x, howToPrint=syntax)
+    if flags['s'].lower() in prefix:
+        senPrint = printers.prefixSentencePrinter
+    elif flags['s'].lower() in infix:
+        senPrint = printers.infixSentencePrinter
+    elif flags['s'].lower() in english:
+        senPrint = printers.englishSentencePrinter 
+    else:
+        senPrint = printers.prefixSentencePrinter    
+    
+    if flags['l'].lower() in english:
+        linePrint = printers.englishLinePrinter
+    else:
+        linePrint = printers.defaultLinePrinter
+        
+    if flags['i'].lower() in english:
+        infPrint = printers.defaultInferencePrinter
+    else:
+        infPrint = printers.defaultInferencePrinter
+    
+    if flags['p'].lower() in english:
+        syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
+        printProof = lambda x: printers.englishProofPrinter(x, howToPrint=syntax, inferencePrinter=infPrint, linePrinter=linePrint, sentencePrinter=senPrint)
+    else:
+        printProof = lambda x: printers.defaultProofPrinter(x, inferencePrinter=infPrint, linePrinter=linePrint, sentencePrinter=senPrint)
     
     #printProof = lambda x: printers.compressedProofPrinter(x, sentencePrinter = printers.prefixSentencePrinter)
     
     # parse the supplied file
-    tstPrf = parsers.defaultProofParser(filename)
+    tstPrf = parsers.defaultProofParser(flags['f'])
 
     # Set the line numbering to start at 1 (instead of the default 0)
     [tstPrf[i].setNumbering(lambda x: x+1) for i in tstPrf]
@@ -103,9 +122,10 @@ try:
     
     prfNamesSorted = [i for i in tstPrf]
     prfNamesSorted.sort()
+    printValid = lambda x: 'Valid' if x else 'Invalid'
     for proofName in prfNamesSorted:
         #Print the name of each proof that was parsed
-        print('%-70s%s' % (proofName, proofName in validTracker))
+        print('%-70s%s' % (proofName, printValid(proofName in validTracker)))
 
     while not done:
         # Get the name of the proof to check
