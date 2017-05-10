@@ -241,121 +241,6 @@ def prefixSentenceParser(string, symbols = None):
     args = [prefixSentenceParser(arg, symbols) for arg in argStr]      
     return sf.generateSentence(op, args, data) 
 
-'''
-    # find the first open paren
-    firstP = string.find(symbols['openParen'])
-    firstOpP = string.find(symbols['openOpParen'])
-
-    if firstP < 0:
-        # if there is no open paren, then this is a variable or an operator
-        # 'A'
-        # 'A[?x]'
-        # 'A[P[?x]]'
-        if firstOpP >= 0 in string:
-            newSymbols = dict(symbols)
-            newSymbols['openParen'] = symbols['openOpParen']
-            newSymbols['closeParen'] = symbols['closeOpParen']
-            #newSymbols['openOpParen'] = symbols['openParen']
-            #newSymbols['closeOpParen'] = symbols['closeParen']            
-            sen = prefixSentenceParser(string, newSymbols)      
-            return sf.generateOperator(sen[0], sen[1:], newSymbols)
-        
-        return init(string)
-
-    elif firstP == 0:
-        # At least one paren, and the string starts with '(...'
-        # '(A)'
-        # '(A, B)'
-        # '(A[?x])'
-        # '(A, B[?x])'
-        
-        # Count the commas
-        commaCount = string.count(',')
-        if commaCount == 0:
-            # if the open paren is the first character and there are no commas, then this is a sentence surrounded by parens
-            # '(A)'
-
-            # Re-parse without the parens
-            return prefixSentenceParser(string[1:-1], symbols)
-
-        # If there are commas, then it is a sentence with no operator
-        # (A, B)
-        op = init('')
-    else:
-        # At least one paren, and the string starts with '?(...'
-        # 'P(A)'
-        # 'P(A, B)'
-        # 'P(A[x])'
-        # 'P[A(x)]'
-        # 'P[A(x, y)]'
-        
-        if firstP < firstOpP:
-            # 'P(A)'
-            # 'P(A, B)'
-            # 'P(A[x])'            
-
-            # the operator is everthing before the first open paren
-            opStr = string[:firstP]
-            
-        else:
-            # 'P[A(x)]'
-            # 'P[A(x, y)]'            
-            opStr = string[:firstP]
-            
-        # Parse the operator
-        op = init(opStr)        
-            
-    # Find the last close paren
-    lastP = string.rfind(symbols['closeParen'])
-
-    # take the operator and its parens out of the string, anything after the last paren is ignored
-    string, extra = string[firstP+1:lastP], string[lastP + 1:]
-
-    # Split the arguments into tokens
-    tokens = string.split(',')
-
-    if len(tokens) == 1:
-        # No commas, one argument
-        # e.g. 'not(A)'
-        var = prefixSentenceParser(string)
-        data = dict(symbols)
-        data['extra'] = extra        
-        return sf.generateSentence(op, (var,), data)
-
-    # list of the arguments as sentences or variables
-    args = []
-
-    # the number of open paren that haven't been closed
-    openCount = 0
-
-    cumStr = ''
-    for part in tokens:
-        # Check if this is the beginning of an argument
-        if len(cumStr) == 0:
-            # If it is add it to the end
-            cumStr += part
-        else:
-            # Otherwise seperate it with a comma and then add it
-            cumStr += ',' + part
-
-        # Count the number of unclosed parens
-        openCount += part.count(symbols['openParen'])
-        openCount -= part.count(symbols['closeParen'])
-
-        # If all the parens match up, then it must be a whole argument
-        if openCount == 0:
-            # recursively parse the argument
-            args.append(prefixSentenceParser(cumStr))
-
-            # reset cumStr to take care of the next part
-            cumStr = ''
-
-    data = dict(symbols)
-    data['extra'] = extra
-    res = sf.generateSentence(op, args, data)
-    return res
-    '''
-
 def defaultInferenceParser(string, sentenceParser = None):
     '''
     Parses an inference into an Inference object
@@ -704,7 +589,7 @@ if __name__ == '__main__':
     print(sen6 < sen7, sen6 <= sen7, sen6 == sen7, sen6 >= sen7, sen6 > sen7)
     print(sen7 < sen6, sen7 <= sen6, sen7 == sen6, sen7 >= sen6, sen7 > sen6)
 
-    import sentence2 as sentence
+    import sentence
 
     def normalize(sen, data):
         if 'index' not in data:
