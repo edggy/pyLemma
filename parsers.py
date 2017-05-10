@@ -292,27 +292,35 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
     path = os.path.dirname(os.path.realpath(__file__))
     filename = None	
 
+    # Attempt to convert string into the data if it is a file or filename
+    dataString = None
+    
     # Try to open the string as if it was a file
     try:
         with open(string) as f:
             path = os.path.dirname(os.path.realpath(string))
             filename = os.path.join(path, string)
-            string = f.read()
+            dataString = f.read()
 
 
-    except:
+    except (TypeError, IOError):
         # string is not a name of a file
         pass
 
-    # Try to read a file if it is a file
-    try:
-        string = string.read()
-        path = os.path.dirname(os.path.realpath(string.name))
-        filename = os.path.join(path, string.name)
-
-    except:
-        # string is not a file
-        pass
+    if dataString is None:
+        # Try to read a file if it is a file
+        try:
+            dataString = string.read()
+            path = os.path.dirname(os.path.realpath(string.name))
+            filename = os.path.join(path, string.name)
+    
+        except AttributeError:
+            # string is not a file
+            pass
+        
+    # string must be the data
+    if dataString is None:
+        dataString = string
 
     # Set the default parders
     if sentenceParser is None: sentenceParser = prefixSentenceParser
@@ -505,7 +513,7 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
     linequeue = deque()
 
     # Add all of the lines from the given input
-    for n, line in enumerate(string.split('\n')):
+    for n, line in enumerate(dataString.split('\n')):
         linequeue.append((line, n, filename))
 
     # Create the data, used to keep track of the state of the fsm
