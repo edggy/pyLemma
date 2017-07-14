@@ -60,9 +60,10 @@ if 'f' not in flags or not os.path.isfile(flags['f']):
     flags['f'] = tfd.askopenfilename()
 
 try:
-    prefix  = ['pre', 'prefix', 'p', 'd', 'default']
+    prefix  = ['pre', 'prefix', 'p', '', 'default']
     infix   = ['in', 'infix', 'i']
     english = ['english', 'e', 'eng', 'hr', 'informal']
+    latex   = ['latex', 'tex', 'l']
     
     for f in ['s', 'l', 'i', 'p']:
         if f not in flags:
@@ -74,22 +75,31 @@ try:
         senPrint = printers.infixSentencePrinter
     elif flags['s'].lower() in english:
         senPrint = printers.englishSentencePrinter 
+    elif flags['s'].lower() in latex:
+        senPrint = printers.latexSentencePrinter
     else:
         senPrint = printers.prefixSentencePrinter    
     
     if flags['l'].lower() in english:
         linePrint = printers.englishLinePrinter
+    elif flags['l'].lower() in latex:
+        linePrint = printers.latexLinePrinter
     else:
         linePrint = printers.defaultLinePrinter
         
     if flags['i'].lower() in english:
         infPrint = printers.defaultInferencePrinter
+    elif flags['i'].lower() in latex:
+        infPrint = printers.latexInferencePrinter
     else:
         infPrint = printers.defaultInferencePrinter
     
     if flags['p'].lower() in english:
         syntax = {'+': '({0} + {1})','*': '({0}*{1})', 'Div':'{0} divides {1}', 's':'s{0}', 'Prime':'{0} is prime', '<':'({0} < {1})'}
         printProof = lambda x: printers.englishProofPrinter(x, howToPrint=syntax, inferencePrinter=infPrint, linePrinter=linePrint, sentencePrinter=senPrint)
+    elif flags['p'].lower() in latex:
+        syntax = {'+': '({0} + {1})','*': '({0} \cdot {1})', 'Div':'({0}|{1})', 's':'s({0})', 'Prime':'Prime({0})', '<':'({0} < {1})'}
+        printProof = lambda x: printers.latexProofPrinter(x, howToPrint=syntax, inferencePrinter=infPrint, linePrinter=linePrint, sentencePrinter=senPrint, inline=False)        
     else:
         printProof = lambda x: printers.defaultProofPrinter(x, inferencePrinter=infPrint, linePrinter=linePrint, sentencePrinter=senPrint)
     

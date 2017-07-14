@@ -253,6 +253,8 @@ def englishLinePrinter(line, sentencePrinter = None, howToPrint = None):
     
     if sentencePrinter is None:
         sentencePrinter = prefixSentencePrinter
+    if howToPrint is None:
+        howToPrint = {}
         
     if 'Assumption' not in howToPrint:
         assumptionsPhrases = ["Let's assume that", 'Assuming', 'Suppose that']
@@ -344,3 +346,368 @@ def englishProofPrinter(p, printedInferences = None, inferencePrinter = None, li
         res += linePrinter(line, sentencePrinter, howToPrint)
     # Add 'QED' to the last line
     return res + 'QED'
+
+def latexSentencePrinter(sen, symbols = None, sentencePrinter = None, howToPrint = None):
+    # \pline[<Line ID>]{<Sentence>}[<Justification>]
+    if symbols is None:
+        symbols = {}
+
+    if 'seperator' not in symbols:
+        symbols['seperator'] = ','
+
+    if 'openParen' not in symbols:
+        symbols['openParen'] = '('
+
+    if 'closeParen' not in symbols:
+        symbols['closeParen'] = ')'    
+        
+    if 'space' not in symbols:
+        symbols['space'] = ' '  
+        
+    if sentencePrinter is None:
+        sentencePrinter = latexSentencePrinter 
+        
+    notation = {}
+    if isinstance(howToPrint, dict):
+        notation = howToPrint
+        howToPrint = None
+        
+    if howToPrint is None:
+        if 'and' not in notation:
+            notation['and'] ='({0} \\land {1})'
+        if 'or' not in notation:
+            notation['or'] = '({0} \\lor {1})'
+        if 'not' not in notation:
+            notation['not'] = '\\lnot {0}'
+        if 'if' not in notation:
+            notation['if'] = '({0} \\lif {1})'
+        if 'iff' not in notation:
+            notation['iff'] = '({0} \\liff {1})'
+        if '=' not in notation:
+            notation['='] = '({0} = {1})'
+        if 'ForAll' not in notation:
+            notation['ForAll'] = '\\uni{{{0}}}{{{1}}}'
+        if 'Exists' not in notation:
+            notation['Exists'] = '\\exi{{{0}}}{{{1}}}'
+        if '|-' not in notation:
+            notation['|-'] = '{0} \\vdash {1}'
+            # notation['|-'] = '\subproof{{{0}}}{{{1}}}'
+        if 'Contradiction' not in notation:
+            notation['Contradiction'] = '\\bot'
+        def howToPrint(sen):
+            if sen.op() in notation:
+                args = []
+                for arg in sen.args():
+                    args.append(sentencePrinter(arg, symbols, sentencePrinter, howToPrint))
+                return notation[sen.op()].format(*args)
+            return(prefixSentencePrinter(sen, symbols, sentencePrinter, howToPrint))
+        
+    return howToPrint(sen)
+
+def latexInferencePrinter(inf, sentencePrinter = None, howToPrint = None):
+    proofStructure = '%s\\\\\n\\fitchprf{%s}{%s}'
+    lineStructure = '\\pline{%s}\\\\\n'
+    
+    assumptions = ''
+    deductions = ''    
+    
+    for sen in inf._premises:
+        assumptions += lineStructure % sentencePrinter(sen, sentencePrinter = sentencePrinter, howToPrint = howToPrint)
+    for sen in inf.getConclusion():
+        deductions += lineStructure % sentencePrinter(sen, sentencePrinter = sentencePrinter, howToPrint = howToPrint)
+    
+    return proofStructure % (inf.name, assumptions[:-3], deductions[:-3])
+    
+
+def latexSubproofPrinter(p, printedInferences = None, inferencePrinter = None, linePrinter = None, sentencePrinter = None, howToPrint = None, linestart = 0, inline = False):
+    structure = '\\subproof{{{0}}}{{{1}}}'
+    if not inline:
+        structure = '{2}\\\\\n\\fitchprf{{{0}}}{{{1}}}'
+    assumptions = ''
+    deductions = ''
+    
+    if not inline:
+        inferenceList = []
+        if printedInferences is None:
+            printedInferences = set([])
+    
+        inferences = p.getInferences()
+        for inf in inferences:
+            # For each inference check if we printed it alredy
+            if inf not in printedInferences:
+                # If it is new, print it and add it to the set
+                try:
+                    inferenceList.append(inferencePrinter(inferences[inf], sentencePrinter, howToPrint))
+                except AttributeError:
+                    subproof = latexSubproofPrinter(inferences[inf], printedInferences, inferencePrinter, linePrinter, sentencePrinter, howToPrint, inline)
+                    inferenceList.append(subproof)
+                printedInferences.add(inf)    
+    
+    n = linestart
+    for line in p:
+        line._num = n
+        line._data['length'] = 1
+        if inline:
+            try:
+                line._data['length'] = line._inference.lengthr()
+            except AttributeError:
+                pass
+        
+        n += line._data['length']        
+        
+        lineStr = linePrinter(line, sentencePrinter, howToPrint, inline)  
+        if line._inference.name == 'Assumption':
+            assumptions += lineStr
+        else:
+            deductions += lineStr
+            
+    if not inline:
+        inferencesString = ''
+        for infStr in inferenceList:
+            inferencesString += infStr + '\\\\\n\n'    
+        return inferencesString + structure.format(assumptions[:-3], deductions[:-3], p.name)
+    
+    return structure.format(assumptions[:-3], deductions[:-3])
+        
+    
+def printSupport(line, inline):
+    # Obtain the support line numbers
+    supportLines = [i() for i in line._support]
+
+    # Arrange the support line numbers in some order
+    supportLines.sort(key=lambda x: x._num)
+    
+    # Get the numbering scheme from the proof
+    numbering = line._proof()._numbering    
+    
+    support = ''
+    # Only add the supportLines if there are 1 or more
+    if len(supportLines) > 0:
+        for supportLine in supportLines:
+            if not inline or supportLine._data['length'] == 1:
+                # For each support number get its printed value via numbering
+                support +=  '%s, ' % numbering(supportLine._num)
+            else:
+                support +=  '%s-%s, ' % (numbering(supportLine._num), numbering(supportLine._num + supportLine._data['length'] - 1))
+        # Delete the last ', '
+        support = support[:-2]
+        
+    return support
+    
+
+def latexLinePrinter(line, sentencePrinter = None, howToPrint = None, inline = False):
+    # \pline[<Line ID>]{<Sentence>}[<Justification>]
+    if sentencePrinter is None:
+        sentencePrinter = latexSentencePrinter
+    if howToPrint is None:
+        howToPrint = {}
+        
+    if 'Assumption' not in howToPrint:
+        howToPrint['Assumption'] = '\\pline[{0}]{{{1}}}'
+    
+    try:
+        if not inline:
+            raise AttributeError()
+        # Assume this line is a subproof
+        return latexSubproofPrinter(line._inference, linePrinter = latexLinePrinter, sentencePrinter = sentencePrinter, howToPrint = howToPrint, linestart = line._num) + '\n'
+    
+    except (AttributeError, TypeError):
+        # This line is an inference rule
+    
+        # Get the numbering scheme from the proof
+        numbering = line._proof()._numbering
+    
+        # get this line number from the numbering scheme
+        lineNum = numbering(line._num)
+        
+        if line._inference.name in howToPrint:
+            lineFormat = howToPrint[line._inference.name]
+        else:
+            lineFormat = '\\pline[{0}]{{{1}}}[{2}: {3}]'
+    
+    
+        sen = sentencePrinter(line._sentence, None, sentencePrinter, howToPrint)
+    
+        if line._inference is not None:
+            # If the inference is set then add it's name
+            inf = str(line._inference.name)
+            replacements = {'Contradiction Intro':'$\\bot$ Intro', 'Contradiction Elim':'$\\bot$ Elim',
+                            'And Intro':'$\land$ Intro', 'And Elim Left':'$\land$ Elim', 'And Elim Right':'$\land$ Elim',
+                            'Or Intro Left':'$\lor$ Intro', 'Or Intro Right':'$\lor$ Intro', 'Or Elim':'$\lor$ Elim',
+                            'Not Intro':'$\lnot$ Intro', 'Not Elim':'$\lnot$ Elim',
+                            'If Intro':'$\lif$ Intro', 'If Elim':'$\lif$ Elim',
+                            'Iff Intro':'$\liff$ Intro', 'Iff Elim Left':'$\liff$ Elim', 'Iff Elim Right':'$\liff$ Elim',
+                            'ForAll Intro':'$\lall$ Intro', 'ForAll Elim':'$\lall$ Elim',
+                            'Exists Intro':'$\lis$ Intro', 'Exists Elim':'$\lis$ Elim'}
+            if inf in replacements:
+                inf = replacements[inf]
+        else:
+            # Otherwise add ??? to denote it has not been set
+            inf = '???'
+    
+        support = printSupport(line, inline)
+    
+        return lineFormat.format(lineNum, sen, inf, support) + '\\\\\n'
+
+def latexProofPrinter(p, printedInferences = None, inferencePrinter = None, linePrinter = None, sentencePrinter = None, howToPrint = None, inline = False):
+    if inferencePrinter is None:
+        inferencePrinter = latexInferencePrinter
+    if linePrinter is None:
+        linePrinter = latexLinePrinter
+    if sentencePrinter is None:
+        sentencePrinter = latexSentencePrinter
+        
+    if inline:
+        structure = '''%%%s
+\\documentclass[11pt]{article}
+\\usepackage{lplfitch}
+\\setlength{\\textheight}{9in} \\setlength{\\headheight}{.2in}
+\\setlength{\\headsep}{0in} \\setlength{\\topmargin}{0in}
+\\usepackage[margin=0.5in]{geometry}
+\\setlength{\\fitchprfwidth}{5.5in}
+\\begin{document}
+\\fitchprf{%s}{%s}
+\\end{document}
+'''
+    
+        assumptions = ''
+        deductions = ''
+        
+        n = 0
+        
+        for line in p:
+            line._num = n
+            line._data['length'] = 1
+            try:
+                line._data['length'] = line._inference.lengthr()
+            except AttributeError:
+                pass
+            
+            n += line._data['length']
+            
+            lineStr = linePrinter(line, sentencePrinter, howToPrint, inline)  
+            if line._inference.name == 'Assumption':
+                assumptions += lineStr
+            else:
+                deductions += lineStr
+                
+        return structure % (p.name, assumptions[:-3], deductions[:-3])
+
+    else:
+        structure = '''%%%s
+\\documentclass[11pt]{article}
+\\usepackage{lplfitch}
+\\setlength{\\textheight}{9in} \\setlength{\\headheight}{.2in}
+\\setlength{\\headsep}{0in} \\setlength{\\topmargin}{0in}
+\\usepackage[margin=0.5in]{geometry}
+\\setlength{\\fitchprfwidth}{4.5in}
+\\begin{document}
+%s
+\\end{document}
+'''
+        proofStructure = '%s\\\\\n\\fitchprf{%s}{%s}'
+        
+        inferenceList = []
+        if printedInferences is None:
+            printedInferences = set([])
+    
+        inferences = p.getInferences()
+        for inf in inferences:
+            # For each inference check if we printed it alredy
+            if inf not in printedInferences:
+                # If it is new, print it and add it to the set
+                try:
+                    inferenceList.append(inferencePrinter(inferences[inf], sentencePrinter, howToPrint))
+                except AttributeError:
+                    subproof = latexSubproofPrinter(inferences[inf], printedInferences, inferencePrinter, linePrinter, sentencePrinter, howToPrint, inline)
+                    inferenceList.append(subproof)
+                printedInferences.add(inf)
+    
+        assumptions = ''
+        deductions = ''
+        for n, line in enumerate(p):
+            # For each line in the proof, set the line number to its appropriate number and add it on a new line
+            line._num = n
+            lineStr = linePrinter(line, sentencePrinter, howToPrint)  
+            if line._inference.name == 'Assumption':
+                assumptions += lineStr
+            else:
+                deductions += lineStr
+        
+        inferencesString = ''
+        for infStr in inferenceList:
+            inferencesString += infStr + '\\\\\n\n'
+        proofStr = proofStructure % (p.name, assumptions[:-3], deductions[:-3])
+        return structure % (p.name, inferencesString + proofStr)
+    
+    
+
+
+def compressedSentencePrinter(sen, symbols = None, sentencePrinter = None, data = None):
+    '''
+    Outputs a sentence in the least number of bytes as a BitStream
+    
+    @param data - A dict of strings to BitStrems
+    '''
+    from copy import copy
+    from BitStream.bitStream import BitStream
+    
+    # If the arity is 0, then just return the operator
+    if sen.arity() == 0:
+        return copy(data[str(sen.op())])
+
+    # Otherwise, print the operator
+    stream = copy(data[str(sen.op())])
+
+    # Then its arguments
+    for arg in sen.args():
+        stream += compressedSentencePrinter(arg, symbols, sentencePrinter, data)
+
+    return stream    
+    
+    
+def compressedProofPrinter(p, printedInferences = None, inferencePrinter = None, linePrinter = None, sentencePrinter = None, howToPrint = None):
+    '''
+    Outputs the Proof in the least number of bytes
+    '''
+    from BitStream.bitStream import BitStream
+    
+    checkedInferences = set([])
+    sentences = []
+    
+    inference_queue = p.getInferences().values()
+    while len(inference_queue) > 0:
+        inf = inference_queue.pop()
+        # For each inference check if we printed it alredy
+        if inf not in checkedInferences:
+            # If it is new
+            try:
+                # Assume it's a Proof and add its Inferences to the queue
+                inference_queue += inf.getInferences().values()
+                # Add each sentence to the set of sentences
+                for sen in inf:
+                    sentences.append(sen.getSentence())
+                    
+            except AttributeError:
+                # It must be an Inference
+            
+                # Add each sentence to the set of sentences
+                for sen in inf:
+                    sentences.append(sen)
+                
+            # Add the inference to the checkedInferences set
+            checkedInferences.add(inf)    
+    
+    freqCount = {}
+    aritys = {}
+    for sen in sentences:
+        if str(sen.op()) not in freqCount:
+            freqCount[str(sen.op())] = 1
+        else:
+            freqCount[str(sen.op())] += 1
+        if str(sen.op()) not in aritys:
+            aritys[str(sen.op())] = sen.arity()
+        for subsen in sen.args():
+            sentences.append(subsen)
+            
+    print freqCount

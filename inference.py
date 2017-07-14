@@ -73,6 +73,12 @@ class Inference(proof.Proof):
     
     def __hash__(self):
         return hash((tuple(self._premises), self._conclusion))
+    
+    def __len__(self):
+        return len(self._premises) + len(self._conclusion)
+    
+    def lengthr(self):
+        return 1
 
     def __eq__(self, other):
         # Two inference rules are equal if the premises are equal and the conclusions are the same

@@ -337,6 +337,15 @@ class Proof:
         '''
         # TODO: don't count empty lines
         return len(self._lines)
+    
+    def lengthr(self):
+        '''
+        The recursive length of this proof and all subproofs
+        '''
+        length = 0
+        for line in self._lines:
+            length += line._inference.lengthr()
+        return length
 
     def __getitem__(self, key):
         '''
