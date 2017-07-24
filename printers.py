@@ -470,7 +470,7 @@ def latexSubproofPrinter(p, printedInferences = None, inferencePrinter = None, l
     return structure.format(assumptions[:-3], deductions[:-3])
         
     
-def printSupport(line, inline):
+def printSupport(line, inline = False):
     # Obtain the support line numbers
     supportLines = [i() for i in line._support]
 
@@ -508,17 +508,20 @@ def latexLinePrinter(line, sentencePrinter = None, howToPrint = None, inline = F
     try:
         if not inline:
             raise AttributeError()
+    
         # Assume this line is a subproof
-        return latexSubproofPrinter(line._inference, linePrinter = latexLinePrinter, sentencePrinter = sentencePrinter, howToPrint = howToPrint, linestart = line._num) + '\n'
+        return latexSubproofPrinter(line._inference, linePrinter = latexLinePrinter, sentencePrinter = sentencePrinter, howToPrint = howToPrint, linestart = line._num, inline = inline) + '\n'
     
     except (AttributeError, TypeError):
         # This line is an inference rule
     
         # Get the numbering scheme from the proof
-        numbering = line._proof()._numbering
+        #numbering = line._proof()._numbering
     
         # get this line number from the numbering scheme
-        lineNum = numbering(line._num)
+        #lineNum = numbering(line._num)
+        
+        lineNum = '*'
         
         if line._inference.name in howToPrint:
             lineFormat = howToPrint[line._inference.name]
@@ -591,7 +594,17 @@ def latexProofPrinter(p, printedInferences = None, inferencePrinter = None, line
             else:
                 deductions += lineStr
                 
-        return structure % (p.name, assumptions[:-3], deductions[:-3])
+        latexString = (structure % (p.name, assumptions[:-3], deductions[:-3]))
+        count = 0
+        result = ''
+        for n, char in enumerate(latexString):
+            if char == '*':
+                result += str(p._numbering(count))
+                count += 1
+            else:
+                result += char
+            
+        return result
 
     else:
         structure = '''%%%s
