@@ -1,7 +1,7 @@
 include $Lemma/Rules/F Rules.inf
 
 proof
-MT Iff Left - Sub 1
+Modus Tollens Iff Left - Sub 1
 1	iff(A, B)				Assumption
 2	not(A)					Assumption
 3	B						Assumption
@@ -10,15 +10,15 @@ MT Iff Left - Sub 1
 done
 
 proof
-MT Iff Left
+Modus Tollens Iff Left
 1	iff(A, B)				Assumption
 2	not(A)					Assumption
-3	|-(B, Contradiction)	MT Iff Left - Sub 1			1,2
+3	|-(B, Contradiction)	Modus Tollens Iff Left - Sub 1			1,2
 .	not(B)					Not Intro					3
 done
 
 proof
-MT Iff Right - Sub 1
+Modus Tollens Iff Right - Sub 1
 1	iff(A, B)				Assumption
 2	not(B)					Assumption
 3	A						Assumption
@@ -27,9 +27,9 @@ MT Iff Right - Sub 1
 done
 
 proof
-MT Iff Right
+Modus Tollens Iff Right
 1	iff(A, B)				Assumption
 2	not(B)					Assumption
-3	|-(A, Contradiction)	MT Iff Right - Sub 1		1,2
+3	|-(A, Contradiction)	Modus Tollens Iff Right - Sub 1		1,2
 .	not(A)					Not Intro					3
 done

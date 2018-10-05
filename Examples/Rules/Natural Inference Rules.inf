@@ -22,6 +22,13 @@ and(@A,@B)
 done
 
 inference
+Simp Right
+and(@A,@B)
+#----
+@B
+done
+
+inference
 DS Left
 or(@A,@B)
 not(@A)
@@ -51,13 +58,6 @@ not(and(@A,@B))
 @B
 #----
 not(@A)
-
-inference
-Simp Right
-and(@A,@B)
-#----
-@B
-done
 
 inference
 Conjunction
@@ -108,28 +108,28 @@ done
 
 inference
 Weakening Left
-if(@A, and(@B,@C))
+if(@A, and(@B, @C))
 #----
-if(@A,@B)
+if(@A, @B)
 done
 
 inference
 Weakening Right
-if(@A,and(@B,@C))
+if(@A, and(@B, @C))
 #----
-if(@A,@C)
+if(@A, @C)
 done
 
 inference
 Strengthening Left
-if(@A,@B)
+if(@A, @B)
 #----
-if(and(@A,@C),@B)
+if(and(@A, @C), @B)
 done
 
 inference
 Strengthening Right
-if(@A,@B)
+if(@A, @B)
 #----
-if(and(@C,@A),@B)
+if(and(@C, @A), @B)
 done

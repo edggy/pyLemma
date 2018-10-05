@@ -233,7 +233,7 @@ done
 inference
 AB And Intro
 @P[@A]
-@P[or(@A,FF)]
+@P[and(@A,or(@A,@B))]
 done
 
 inference
@@ -244,14 +244,14 @@ done
 
 inference
 AB Or Intro
-@P[or(@A,and(@A,@B))]
 @P[@A]
+@P[or(@A,and(@A,@B))]
 done
 
 inference
 AB Or Elim
-@P[@A]
 @P[or(@A,and(@A,@B))]
+@P[@A]
 done
 
 inference

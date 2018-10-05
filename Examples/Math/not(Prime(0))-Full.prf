@@ -1,0 +1,227 @@
+inference
+And Intro
+@A
+@B
+and(@A,@B)
+done
+
+inference
+Contradiction Intro
+@A
+not(@A)
+Contradiction
+done
+
+inference
+Exists Intro
+@P[?a]
+Exists(?x,@P[?x])
+done
+
+inference
+Assumption
+@A
+done
+
+inference
+ForAll Elim
+ForAll(?x,@P[?x])
+@P[@a]
+done
+
+inference
+Iff Elim Right
+iff(@A,@B)
+@B
+@A
+done
+
+inference
+Iff Elim Left
+iff(@A,@B)
+@A
+@B
+done
+
+inference
+And Elim Right
+and(@A,@B)
+@B
+done
+
+inference
+If Elim
+if(@A,@B)
+@A
+@B
+done
+
+inference
+If Intro
+|-(@A,@B)
+if(@A,@B)
+done
+
+inference
+ForAll Intro
+|-(,@P[?a])
+ForAll(?x,@P[?x])
+done
+
+inference
+Not Intro
+|-(@A,Contradiction)
+not(@A)
+done
+
+inference
+Peano Induction
+|-(@P[?a],@P[s(?a)])
+@P[0]
+ForAll(?x,@P[?x])
+done
+
+inference
+Or Elim
+or(@A,@B)
+|-(@B,@C)
+|-(@A,@C)
+@C
+done
+
+proof
+"Everything Divides 0" - Sub 2
+1	ForAll(x,=(*(x,0),0))	Assumption
+2	ForAll(x,ForAll(y,iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))	Assumption
+3	not(=(a,0))	Assumption
+4	=(*(a,0),0)	ForAll Elim	1
+5	Exists(z,=(*(a,z),0))	Exists Intro	4
+6	and(not(=(a,0)),Exists(z,=(*(a,z),0)))	And Intro	3, 5
+7	ForAll(y,iff(Div(a,y),and(not(=(a,0)),Exists(z,=(*(a,z),y)))))	ForAll Elim	2
+8	iff(Div(a,0),and(not(=(a,0)),Exists(z,=(*(a,z),0))))	ForAll Elim	7
+9	Div(a,0)	Iff Elim Right	6, 8
+done
+
+proof
+"Everything Divides 0" - Sub 1
+1	ForAll(x,=(*(x,0),0))	Assumption
+2	ForAll(x,ForAll(y,iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))	Assumption
+3	|-(not(=(a,0)),Div(a,0))	"Everything Divides 0" - Sub 2	1, 2
+4	if(not(=(a,0)),Div(a,0))	If Intro	3
+done
+
+proof
+"Everything Divides 0"
+1	ForAll(x,=(*(x,0),0))	Assumption
+2	ForAll(x,ForAll(y,iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))	Assumption
+3	|-(,if(not(=(a,0)),Div(a,0)))	"Everything Divides 0" - Sub 1	1, 2
+4	ForAll(x,if(not(=(x,0)),Div(x,0)))	ForAll Intro	3
+done
+
+proof
+"Everything Divides 0" - Sub 2
+1	ForAll(x,=(*(x,0),0))	Assumption
+2	ForAll(x,ForAll(y,iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))	Assumption
+3	not(=(a,0))	Assumption
+4	=(*(a,0),0)	ForAll Elim	1
+5	Exists(z,=(*(a,z),0))	Exists Intro	4
+6	and(not(=(a,0)),Exists(z,=(*(a,z),0)))	And Intro	3, 5
+7	ForAll(y,iff(Div(a,y),and(not(=(a,0)),Exists(z,=(*(a,z),y)))))	ForAll Elim	2
+8	iff(Div(a,0),and(not(=(a,0)),Exists(z,=(*(a,z),0))))	ForAll Elim	7
+9	Div(a,0)	Iff Elim Right	6, 8
+done
+
+proof
+"Everything Divides 0" - Sub 1
+1	ForAll(x,=(*(x,0),0))	Assumption
+2	ForAll(x,ForAll(y,iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))	Assumption
+3	|-(not(=(a,0)),Div(a,0))	"Everything Divides 0" - Sub 2	1, 2
+4	if(not(=(a,0)),Div(a,0))	If Intro	3
+done
+
+proof
+"Everything Divides 0"
+1	ForAll(x,=(*(x,0),0))	Assumption
+2	ForAll(x,ForAll(y,iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))	Assumption
+3	|-(,if(not(=(a,0)),Div(a,0)))	"Everything Divides 0" - Sub 1	1, 2
+4	ForAll(x,if(not(=(x,0)),Div(x,0)))	ForAll Intro	3
+done
+
+proof
+"ForAll(x, not(=(s(x),x)))" - Sub 2
+1	ForAll(x,ForAll(y,if(=(s(x),s(y)),=(x,y))))	Assumption
+2	not(=(s(a),a))	Assumption
+3	=(s(s(a)),s(a))	Assumption
+4	ForAll(y,if(=(s(s(a)),s(y)),=(s(a),y)))	ForAll Elim	1
+5	if(=(s(s(a)),s(a)),=(s(a),a))	ForAll Elim	4
+6	=(s(a),a)	If Elim	3, 5
+7	Contradiction	Contradiction Intro	2, 6
+done
+
+proof
+"ForAll(x, not(=(s(x),x)))" - Sub 1
+1	ForAll(x,ForAll(y,if(=(s(x),s(y)),=(x,y))))	Assumption
+2	not(=(s(a),a))	Assumption
+3	|-(=(s(s(a)),s(a)),Contradiction)	"ForAll(x, not(=(s(x),x)))" - Sub 2	1, 2
+4	not(=(s(s(a)),s(a)))	Not Intro	3
+done
+
+proof
+"ForAll(x, not(=(s(x),x)))"
+1	ForAll(x,not(=(s(x),0)))	Assumption
+2	ForAll(x,ForAll(y,if(=(s(x),s(y)),=(x,y))))	Assumption
+3	not(=(s(0),0))	ForAll Elim	1
+4	|-(not(=(s(a),a)),not(=(s(s(a)),s(a))))	"ForAll(x, not(=(s(x),x)))" - Sub 1	2
+5	ForAll(x,not(=(s(x),x)))	Peano Induction	3, 4
+done
+
+proof
+"not(=(s(1),1))" - Sub 1
+1	ForAll(x,not(=(s(x),0)))	Assumption
+2	ForAll(x,ForAll(y,if(=(s(x),s(y)),=(x,y))))	Assumption
+3	ForAll(x,not(=(s(x),x)))	"ForAll(x, not(=(s(x),x)))"	1, 2
+4	=(s(1),1)	Assumption
+5	not(=(s(1),1))	ForAll Elim	3
+6	Contradiction	Contradiction Intro	4, 5
+done
+
+proof
+"not(=(s(1),0))" - Sub 1
+1	ForAll(x,not(=(s(x),0)))	Assumption
+2	=(s(1),0)	Assumption
+3	not(=(s(1),0))	ForAll Elim	1
+4	Contradiction	Contradiction Intro	2, 3
+done
+
+proof
+"not(Prime(0))" - Sub 1
+1	ForAll(x,not(=(s(x),0)))	Assumption
+2	ForAll(x,ForAll(y,if(=(s(x),s(y)),=(x,y))))	Assumption
+3	ForAll(x,=(*(x,0),0))	Assumption
+4	ForAll(x,ForAll(y,iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))	Assumption
+5	ForAll(x,iff(Prime(x),and(not(=(x,1)),ForAll(y,iff(Div(y,x),or(=(y,1),=(y,x)))))))	Assumption
+6	ForAll(x,if(not(=(x,0)),Div(x,0)))	"Everything Divides 0"	3, 4
+7	Prime(0)	Assumption
+8	iff(Prime(0),and(not(=(0,1)),ForAll(y,iff(Div(y,0),or(=(y,1),=(y,0))))))	ForAll Elim	5
+9	and(not(=(0,1)),ForAll(y,iff(Div(y,0),or(=(y,1),=(y,0)))))	Iff Elim Left	7, 8
+10	ForAll(y,iff(Div(y,0),or(=(y,1),=(y,0))))	And Elim Right	9
+11	if(not(=(s(1),0)),Div(s(1),0))	ForAll Elim	6
+12	not(=(s(1),0))	ForAll Elim	1
+13	Div(s(1),0)	If Elim	11, 12
+14	iff(Div(s(1),0),or(=(s(1),1),=(s(1),0)))	ForAll Elim	10
+15	or(=(s(1),1),=(s(1),0))	Iff Elim Left	13, 14
+16	|-(=(s(1),1),Contradiction)	"not(=(s(1),1))" - Sub 1	1, 2
+17	|-(=(s(1),0),Contradiction)	"not(=(s(1),0))" - Sub 1	1
+18	Contradiction	Or Elim	15, 16, 17
+done
+
+proof
+"not(Prime(0))"
+1	ForAll(x,not(=(s(x),0)))	Assumption
+2	ForAll(x,ForAll(y,if(=(s(x),s(y)),=(x,y))))	Assumption
+3	ForAll(x,=(*(x,0),0))	Assumption
+4	ForAll(x,ForAll(y,iff(Div(x,y),and(not(=(x,0)),Exists(z,=(*(x,z),y))))))	Assumption
+5	ForAll(x,iff(Prime(x),and(not(=(x,1)),ForAll(y,iff(Div(y,x),or(=(y,1),=(y,x)))))))	Assumption
+6	|-(Prime(0),Contradiction)	"not(Prime(0))" - Sub 1	1, 2, 3, 4, 5
+7	not(Prime(0))	Not Intro	6
+done

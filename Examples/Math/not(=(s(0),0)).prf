@@ -1,0 +1,23 @@
+include		$Lemma/Rules/F Rules - FO.inf
+
+proof
+"not(=(s(0),0))" - Sub 1
+include		$Lemma/Axioms/Peano Axioms.axm	1			# PA1
+1	=(s(0),0)											Assumption
+2	not(=(s(0), 0))										ForAll Elim					PA1
+.	Contradiction										Contradiction Intro			1,2
+done
+
+
+proof
+"not(=(s(0),0))"
+include		$Lemma/Axioms/Peano Axioms.axm	1			# PA1
+1	|-(=(s(0),0), Contradiction)						"not(=(s(0),0))" - Sub 1	PA1
+.	not(=(s(0),0))										Not Intro					1
+done
+
+proof
+"not(=(s(0),0)) - Teach"
+include		$Lemma/Axioms/Peano Axioms.axm	1			# PA1
+.	not(=(s(0),0))										"not(=(s(0),0))"			PA1
+done

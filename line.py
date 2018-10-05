@@ -1,7 +1,8 @@
 import weakref
 
-import sentence2 as sentence
+import sentence
 import proof
+import printers
 
 class Line:
     '''
@@ -62,42 +63,11 @@ class Line:
         return self
 
     def __str__(self):
-        # Obtain the support line numbers
-        supportLines = [i()._num for i in self._support]
-
-        # Arrange the support line numbers in some order
-        supportLines.sort()
-
-        # Get the numbering scheme from the proof
-        numbering = self._proof()._numbering
-
-        # get this line number from the numbering scheme
-        lineNum = numbering(self._num)
-
-        # start the result as the line number and a tab then the sentence
-        ret = str(lineNum) + '\t' + str(self._sentence)
-
-        if self._inference is not None:
-            # If the inference is set then add it's name
-            ret += '\t' + str(self._inference.name)
-        else:
-            # Otherwise add ??? to denote it has not been set
-            ret += '\t' + '???'
-
-        # Only add the supportLines if there are 1 or more
-        if len(supportLines) > 0:
-            ret += '\t'
-            for supportLine in supportLines:
-                # For each support number get its printed value via numbering
-                ret += str(numbering(supportLine)) + ', '
-            # Delete the last ', '
-            ret = ret[:-2]
-
-        return ret
+        return printers.defaultLinePrinter(self)
 
     def __hash__(self):
-        # The hash is the hash of its string reprenstation
-        return hash(str(self))
+        # The hash is the hash of its sentence and inference
+        return hash((self._sentence, self._inference))
 
     def __contains__(self, item):
         # This checks weather item was assumed in this line

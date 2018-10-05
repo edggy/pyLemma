@@ -1,7 +1,7 @@
 from collections import deque
 
 import inference
-import sentence2 as sentence
+import sentence
 import line
 import util
 import printers
@@ -366,7 +366,10 @@ class Proof:
         '''
         Prints the proof using the supplied printer
         '''
-        return self._printer(self)		
+        return self._printer(self)
+    
+    def __hash__(self):
+        return hash(tuple(self._lines))
 
     def __repr__(self):
         return self._printer(self)

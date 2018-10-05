@@ -1,0 +1,35 @@
+include		$Lemma/Rules/F Rules - FO.inf
+include		$Lemma/Math/Everything Divides 0.prf
+include		$Lemma/Math/not(=(s(1),0)).prf
+include		$Lemma/Math/not(=(s(1),1)).prf
+
+proof
+"not(Prime(0))" - Sub 1
+include		$Lemma/Axioms/Peano Axioms.axm	1,2			# PA1, PA2
+include		$Lemma/Axioms/Peano Axioms.axm	5			# PA5
+include		$Lemma/Axioms/Peano Axioms.axm	8			# DefDiv
+include		$Lemma/Axioms/Peano Axioms.axm	9			# DefPrime
+ED0	ForAll(x, if(not(=(x,0)),Div(x,0)))												"Everything Divides 0"		PA5, DefDiv										
+1	Prime(0)																		Assumption
+2	iff(Prime(0), and(not(=(0,1)), ForAll(y, iff(Div(y,0),or(=(y,1),=(y,0))))))		ForAll Elim					DefPrime
+3	and(not(=(0,1)), ForAll(y, iff(Div(y,0),or(=(y,1),=(y,0)))))					Iff Elim Left				1,2
+4	ForAll(y, iff(Div(y,0),or(=(y,1),=(y,0))))										And Elim Right				3
+5	if(not(=(s(1),0)),Div(s(1),0))													ForAll Elim					ED0
+6	not(=(s(1), 0))																	ForAll Elim					PA1
+7	Div(s(1),0)																		If Elim						5,6
+8	iff(Div(s(1),0),or(=(s(1),1),=(s(1),0)))										ForAll Elim					4
+9	or(=(s(1),1),=(s(1),0))															Iff Elim Left				7,8
+10	|-(=(s(1),1), Contradiction)													"not(=(s(1),1))" - Sub 1	PA1, PA2
+11	|-(=(s(1),0), Contradiction)													"not(=(s(1),0))" - Sub 1	PA1
+.	Contradiction																	Or Elim						9,10,11
+done
+
+proof
+"not(Prime(0))"
+include		$Lemma/Axioms/Peano Axioms.axm	1, 2		# PA1, PA2
+include		$Lemma/Axioms/Peano Axioms.axm	5			# PA5
+include		$Lemma/Axioms/Peano Axioms.axm	8			# DefDiv
+include		$Lemma/Axioms/Peano Axioms.axm	9			# DefPrime
+1	|-(Prime(0), Contradiction)														"not(Prime(0))" - Sub 1		PA1, PA2, PA5, DefDiv, DefPrime
+.	not(Prime(0))																	Not Intro					1
+done

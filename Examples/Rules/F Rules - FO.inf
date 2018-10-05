@@ -1,4 +1,4 @@
-include	F Rules.inf
+include	$Lemma/Rules/F Rules.inf
 
 inference
 ForAll Intro
@@ -55,6 +55,13 @@ inference
 Peano Induction
 @P[0]
 |-(@P[?a], @P[s(?a)])
+#----
+ForAll(?x, @P[?x])
+done
+
+inference
+Strong Induction
+|-(ForAll(?y, if(<(?y, ?a),@P[?y])), @P[?a])
 #----
 ForAll(?x, @P[?x])
 done

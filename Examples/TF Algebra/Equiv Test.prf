@@ -23,3 +23,14 @@ proof
 6	or(not(B), TT)				CO Or			5
 7	TT							AN Or Elim		6
 done
+
+proof
+"Problem 5"
+1	or(and(or(A,C), or(and(A,D), and(A, not(D)))), or(and(A, C), C))		Assumption
+2	or(and(or(A,C), A), or(and(A, C), C))									AD Or Elim		1
+3	or(and(or(A,C), A), or(C, and(A, C)))									CO Or			2
+4	or(and(or(A,C), A), or(C, and(C, A)))									CO And			3
+5	or(and(or(A,C), A), C)													AB Or Elim		4
+6	or(and(A, or(A,C)), C)													CO And			5
+7	or(A, C)																AB And Elim		6
+done

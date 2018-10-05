@@ -70,6 +70,9 @@ class Inference(proof.Proof):
 
     def __repr__(self):
         return self._printer(self)
+    
+    def __hash__(self):
+        return hash((tuple(self._premises), self._conclusion))
 
     def __eq__(self, other):
         # Two inference rules are equal if the premises are equal and the conclusions are the same

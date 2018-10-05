@@ -3,41 +3,30 @@ import copy
 import util
 import printers
 
-
 class Sentence:
     '''
     A finite sequence of symbols from a given alphabet that is part of a formal language
 
     Contains an operator and some number of arguments
     '''
-    def __init__(self, op, args, printer = None):
+    def __init__(self, op, args, data = None):
         '''
         @param op - The main operator of the sentence
         @param args - A tuple of the arguments of the main operator
-        @param printer - The printer to use to print this Sentence
+        @param data - An optional argument to store extra data in the Sentence
         '''
-        # _op is the operator
-        self._op = op
 
-        # _args is a tuple of arguments
-        self._args = args
+        # _data is a list starting with the operator followed by the arguments
+        self._data = tuple([op] + list(args))
 
-        # Set the printer
-        self._printer = printer
+        # Used to cache the length
+        self._length = None
+        self._terms = None
 
-        # Use the default printer by default
-        if self._printer == None:
-            self._printer = printers.prefixSentencePrinter
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        try:
-            # Try to use the printer to print the sentence
-            return self._printer(self)
-        except TypeError:
-            return ''
+        # Used to store extra information
+        self.extraData = data
+        if self.extraData is None:
+            self.extraData = {}
 
     def __lt__(self, other):
         '''
@@ -49,7 +38,7 @@ class Sentence:
         e.g.
         'and(?A, ?B) < and(P, Q)'
         '''
-        return self <= other and other.mapInto(self) is None
+        return self <= other and len(other.mapInto(self)) == 0
 
     def __le__(self, other):
         '''
@@ -60,20 +49,21 @@ class Sentence:
         e.g.
         'and(?A, ?B) <= and(P, Q)'
         '''		
-        return self.mapInto(other) is not None
+        return len(self.mapInto(other)) > 0
 
     def __eq__(self, other):
         '''
         Two sentences are equal iff their operators and all the arguments are
         equal
         '''
-        return self.op() == other.op() and self._args == other._args
+        return self._data == other._data
 
     def __ne__(self, other):
         '''
-        Two sentences are not equal iff either their operators are not equal or their arguments are not equal
+        Two sentences are not equal iff either their operators are not equal 
+        or their arguments are not equal
         '''
-        return self.op() != other.op() or self._args != other._args
+        return self._data != other._data
 
     def __gt__(self, other):  
         '''
@@ -91,87 +81,86 @@ class Sentence:
         # self >= other iff other <= self
         return other.__le__(self)
 
+    def __repr__(self):
+        return printers.prefixSentencePrinter(self, self.extraData)
+
     def __hash__(self):
-        return hash((self._op, self._args))
+        return hash(self._data) * hash(type(self))
 
     def __len__(self):
         '''
-        The length of a sentence is one more than the sum of it's parts
+        The length of a sentence is one more than the sum of it's arguments
         '''
-        length = 1
-        for s in self._args:
-            # recursively add the length of its arguments
-            length += len(s)
-        return length
+        if self._length is None:
+            # Calculate the length
+            self._length = 1
+            for s in self._data[1:]:
+                # recursively add the length of its arguments
+                self._length += len(s)
+
+        return self._length
 
     def __getitem__(self, key):
-        return self._args[key]
+        return self._data[key]
 
     def __iter__(self):
         return SentenceIterator(self)
 
     def __contains__(self, item):
-        for i in self._args:
+        for i in self._data:
             # If the item is an argument or the item is in the argument, then it is in this
             if item == i or item in i:
                 return True
         return False
 
-
-
     def __copy__(self):
-        # Make a shallow copy of the operator
-        newOp = copy.copy(self._op)
 
-        # Make a shallow copy of the arguments
-        newArgs = tuple(self._args)
-
-        ret = Sentence(newOp, *newArgs)    
-        ret.setPrinter(self._printer)
-        return ret
+        # Since Sentences are immutable a copy is itsself
+        return self
 
     def __deepcopy__(self, memo):
-        # Make a deep copy of the operator
-        newOp = copy.deepcopy(self._op)
 
-        # Make a deep copy of each of the arguments
-        newArgs = tuple([copy.deepcopy(i) for i in self._args])
+        # Since Sentences are immutable a deep copy is itsself
+        return self
 
-        ret = Sentence(newOp, *newArgs)
-        ret.setPrinter(self._printer)
-        return ret	
-
-    def mapInto(self, other):
+    def mapInto(self, other, replaceAll = True):
         '''
-        Returns a dict of the smallest mapping of variables to sentences that if substituted 
-        into this sentence would make this sentence == other, or None if there is none 
+        Returns a list of dicts of the smallest mapping of variables to sentences that if substituted 
+        into this sentence would make this sentence == other, or [] (empty list) if there is none 
 
         Examples:
-        sen1 = 'and(?a, ?b)'
+        sen1 = 'and(@a, @b)'
         sen2 = 'and(or(p,q),iff(r,s))'
-        sen1.mapInto(sen2) == {'?a': 'q or p', '?b':'r iff s'}
+        sen1.mapInto(sen2) == {'and':'and', @a': 'or(p, q)', '@b':'iff(r,s)'}
         '''
 
-        if other is None:
-            return None
+        # Check that other is not none and the aritys are the same for a quick sanity check
+        if other is None or self.arity() != other.arity():
+            return []
 
-        if isinstance(self.op(), Variable):
-            pass
-
-        # Check that the main operators and the arity are the same unless self.op() is a variable
-        if self.op() != other.op() or self.arity() != other.arity():
-            return None
-
-        result = {}
+        results = [{}]
         for m, n in zip(self, other):
+            madeMapping = False
+            newResults = []
             # For each argument, try to map it into the other argument recursively
-            mapping = m.mapInto(n)
+            for mapping in m.mapInto(n):
 
-            # If there is no mapping for a pair of arguments, then there is no maping at all
-            if not mapping: return None
-
-            result = util.mapMerge(result, mapping)
-        return result
+                # If there is no mapping for a pair of arguments, then there is no maping at all
+                if not mapping: 
+                    continue
+    
+                
+                for res in results:
+                    # Merge the mapping into the results
+                    newResult = util.mapMerge(res, mapping)
+                    if len(newResult) > 0:
+                        newResults.append(newResult)
+                        madeMapping = True
+            results = newResults
+            
+        if not madeMapping:
+            return []
+        return results
 
     def applyFunction(self, function, data = None):
         '''
@@ -185,6 +174,7 @@ class Sentence:
             data = {}
 
         args = []
+
         # Apply the function to this sentence
         sen = function(self, data)
 
@@ -193,58 +183,69 @@ class Sentence:
             args.append(s.applyFunction(function, data))
 
         # Return a new sentence after the function has been applied
-        ret = Sentence(sen.op(), *args)
-        ret.setPrinter(self._printer)
-        return ret
+        return sf.generateSentence(args[0], args[1:])
 
 
-    def subsitute(self, mapping):
+    def subsitute(self, mapping, replaceAll = True):
         '''
         Makes a subsitution recursively
 
         @param mapping - The substitutions to be applied
-        @return - A new sentence with all the substitutions made
+        @return - A list of sentences with all the substitutions made
         '''
 
-        # TODO: use the applyFunction method
-
-        # Base case: check if this sentence is in the mapping, if so we are done
         if self in mapping:
-            return mapping[self]
+            return [mapping[self]]
 
-        args = []
-        for s in self:
-            # For each argument in self, check if it is in the mapping
-            if s in mapping:
-                # If it is, make the subsitution
-                args.append(mapping[s])
-            else:
-                # If it is not, recursively make more subsitutions
-                args.append(s.subsitute(mapping))
+        def sub(sen, data):
+            if sen in mapping:
+                return mapping[sen]
+            return sen
 
-        sen = Sentence(self.op(), *args)
-        sen.setPrinter(self._printer)
-        return sen
+        if replaceAll:
+            return [self.applyFunction(sub)]
+        
+        
+        results = set([self])
+            
+        for i, s in enumerate(self):
+            try:
+                for sub in s.subsitute(mapping, replaceAll):
+                    if s == sub:
+                        continue
+                    
+                    if i == 0:
+                        newSen = sf.generateSentence(sub, self[1:])
+                    else:
+                        args = list(self[1:])
+                        args[i - 1] = sub
+                        newSen = sf.generateSentence(self[0], args)
+                    results.add(newSen)
+                    results |= set(newSen.subsitute(mapping, replaceAll))
+                    
+            except AttributeError:
+                pass
+            
+            
+        return list(results)
 
     def op(self):
         '''
         Gets the main operator of this sentence
         '''
-        return self._op
+        return self._data[0]
 
-    def setPrinter(self, printer):
+    def args(self):
         '''
-        Sets the printer for this sentence and its arguments
+        Gets the arguments of the main operator
         '''
-        self._printer = printer
-        for arg in self:
-            arg.setPrinter(printer)
+        return self._data[1:]
 
     def arity(self):
         '''
         Gets the arity of the main operator i.e. the number of arguments
         '''
-        return len(self._args)
+        return len(self._data) - 1
 
     def generalize(self):
         '''
@@ -253,128 +254,85 @@ class Sentence:
         @return - a copy of this sentence with all of the literals as variables with the same name
         '''
 
-        retArgs = list(self._args)
+        retArgs = list(self._data)[1:]
 
         for n, arg in enumerate(retArgs):
             retArgs[n] = arg.generalize()
 
-        return Sentence(self.op(), *retArgs)
+        return Sentence(self.op(), retArgs)
 
+    def terms(self):
+        if self._terms is None:
+            self._terms = set([])
+            for p in self._data:
+                self._terms |= (p.terms())
+        return self._terms       
+
+    def subSentences(self):
+        res = set([self])
+        for s in self[1:]:
+            res |= s.subSentences()
+        return res
 
 class Wff(Sentence):
     '''
-    A Wff (Well formed formula) is a sentence that may contain more arguments
-
-    e.g.
-    phi <= 'A'
-    phi <= 'and(A,B)'
-    phi <= phi(x) <= P(x)
-    phi(x) <= and(A, P(x))
-    phi(x) <= phi(x, y) <= or(R(x), P(x,y))
-    phi(x, y) == phi(y, x)
-    '''
-    def __lt__(self, other):
-        '''
-        A Wff is less than a sentence as long as the sentecne 
-        '''
-
-
-    def __le__(self, other):
-        '''
-        A variable is always less than or equal to another sentence
-        '''        
-        pass
-
-    def __eq__(self, other):
-        '''
-        A variable is equal to other if other is not a variable or they share the same representation
-        '''
-
-        pass
-
-    def __ne__(self, other):
-        '''
-        A variable is not equal to other if other is a variable and they dont share the same representation
-        '''     
-        pass
-
-    def mapInto(self, other):
-        '''
-        Returns a dict of the smallest mapping of variables to sentences that if subsituted 
-        into this sentence would make this sentence == other, or None if there is none
-
-        e.g.
-        Note: '@symbol' is the Wff, '?symbol' is a variable
-
-        '@and'.mapInto('and(A, B)') == {'@and':'and(A, B)'}
-        '@and(A)'.mapInto('and(A, B)') == {'@and':'and', 'A':'(A, B)'}
-        '@and(A)'.mapInto('and(or(A, C), B)') == {'@and':'and', 'A':'(or(A, C), B)'}
-        '@and(A)'.mapInto('and(or(D, C), B)') == None
-        '@and(?x)'.mapInto('and(or(D, C), B)') == {'@and':'and', '?x':'(or(D, C), B)'}
-        '@?f(?x)'.mapInto('and(A(a),A(a))') == {'@?f':'and', '?x':'(A(a),A(a))'}
-        '@?f(?X(?x))'.mapInto('and(A(a),A(a))') == {'@?f':'and', '?X(?x)':'(A(a),A(a))'}
-        '?X(?x)'.mapInto('(A(a),A(a))') == {}
-
-
-        '''
-        return {self: other}    
-
-
-class Variable(Sentence):
-    '''
-    A variable is a placeholder in a sentence that matches any sentence or wff
+    A Wff is a placeholder in a sentence that matches any sentence
     '''
 
-    def __init__(self, name = 'A'):
-        # The name of the variable, same named variables are considered to be the same variable
+    def __init__(self, name = 'A', symbol = '', data = None):
+        # The name of the Wff, same named variables are considered to be the same Wff
 
         try:
             self._name = name._name
         except AttributeError:
             self._name = ''.join(str(name).split())
 
-        # Not used for Variables
-        self._printer = None
+        # A Wff is an operator with no arguments
+        self._data = (name)
 
-        # A variable is an operator with no arguments
-        self._op = self
-        self._args = ()
+        # The symbol used to print
+        self._symbol = symbol
+
+        # Used to store extra information
+        self.extraData = data
+        if self.extraData is None:
+            self.extraData = {}        
 
     def __repr__(self):
-        return '?' + self._name    
+        return self._symbol + self._name    
 
     def __str__(self):
-        return '?' + self._name
+        return self._symbol + self._name
 
     def __lt__(self, other):
         '''
-        A variable is less than a sentence as long as the sentecne cannot be mapped into a variable
+        A Wff is less than a sentence as long as the sentecne cannot be mapped into a Wff
         '''
 
-        #Ensure other is not a variable
-        return other.mapInto(self) is None
+        # Ensure other is not a Wff
+        return len(other.mapInto(self)) == 0
 
     def __le__(self, other):
         '''
-        A variable is always less than or equal to another sentence
+        A Wff is always less than or equal to another sentence
         '''        
         # Vacuously true since {self: other} is always a valid mapping
         return True
 
     def __eq__(self, other):
         '''
-        A variable is equal to other if other is not a variable or they share the same representation
+        A Wff is equal to other if other is not a Wff or they share the same representation
         '''
 
-        # Something is a variable if it is less than or equal to a variable
-        return not other <= self or str(self) == str(other)
+        # Something is a Wff if it is less than or equal to a Wff
+        return other <= self and str(self) == str(other)
 
     def __ne__(self, other):
         '''
-        A variable is not equal to other if other is a variable and they dont share the same representation
+        A Wff is not equal to other if other is a Wff and they dont share the same representation
         '''     
 
-        # Something is a variable if it is less than or equal to a variable
+        # Something is a Wff if it is less than or equal to a Wff
         return other <= self and str(self) != str(other)
 
     def __hash__(self):
@@ -384,58 +342,86 @@ class Variable(Sentence):
         return 1
 
     def __getitem__(self, key):
-        # Variables have no arguments
+        # Wff have no arguments
+        if key == 0:
+            return self.op()
         raise IndexError
 
     def __iter__(self):
         return SentenceIterator(self)
 
     def __contains__(self, item):
-        # Variables contain no arguments
+        # Wff contain no arguments
         return False
 
     def __copy__(self):
-        # A copy of a variable is itseelf
+        # A copy of a Wff is itseelf
         return self
 
     def __deepcopy__(self, memo):
-        # A deep copy of a variable is itseelf
-        return Variable(self._name)
+        # A deep copy of a Wff is itsself
+        return self
 
-    #def op(self):
-    #	return self
+    def op(self):
+        return self
+
+    def args(self):
+        return ()
 
     def arity(self):
         return 0
 
-    def mapInto(self, other):
+    def mapInto(self, other, replaceAll = True):
         '''
-        A variable can map into anything
+        A Wff can map into anything
         '''
-        return {self: other}
+        return [{self: other}]
 
-    def subsitute(self, mapping):
-        return self
+    def subsitute(self, mapping, replaceAll = True):
+        if self in mapping:
+            return [mapping[self]]
+        return [self]
 
     def generalize(self):
         # Already generalized
-        return Variable(self)
+        return sf.generateWff(self._name)
 
-    def getFree(self):
-        # This is a free variable
+    def applyFunction(self, function, data = None):
+        '''
+        Apply a function recursively to this sentence and each of its arguments
+
+        @param function - A function that takes 2 arguments, a sentence and a data object and returns a sentence
+        @return - A new sentence of the funcion being applied to the original
+        '''
+
+        if data is None:
+            data = {}
+
+        # Return a new sentence after the function has been applied
+        return function(self, data)
+
+    def terms(self):
         return set([self])
+
+    def subSentences(self):
+        return set([self])
+
+class Variable(Wff):
+    '''
+    A variable is a Wff but only for atomic terms
+    '''
+    def mapInto(self, other, replaceAll = True):
+        '''
+        A Variable can only map into atomic terms
+        '''
+        if len(other.args()) == 0 and (not isinstance(other, Wff) or isinstance(other, Variable)):
+            return [{self: other}]
+        return []
 
 class Literal(Variable):
     '''
     A literal is the smallest sentence
     '''
-
-    def __repr__(self):
-        return self._name    
-
-    def __str__(self):
-        return self._name
-
 
     def __lt__(self, other):
         '''
@@ -444,13 +430,16 @@ class Literal(Variable):
         return False
 
     def __le__(self, other):
+        '''
+        Only true when self == other
+        '''
         return self == other
 
     def __eq__(self, other):
         '''
         A Literal is equal if they have the same representation
         '''
-        return str(self._name) == str(other)
+        return str(self) == str(other)
 
     def __ne__(self, other):
         '''
@@ -458,20 +447,126 @@ class Literal(Variable):
         '''        
         return str(self) != str(other)	
 
-    def mapInto(self, other):
+    def mapInto(self, other, replaceAll = True):
         '''
         A literal can only map into itsself 
         '''
         if self == other:
-            return {self: other}
+            return [{self: other}]
 
-        return None	
+        return []
+    
+class Operator(Sentence):
 
-    def generalize(self):
-        return Variable(self)
+    def __len__(self):
+        return 1
 
-    def getFree(self):
-        return set([])
+    def __contains__(self, item):
+        return self == item
+
+    def mapInto(self, other, replaceAll = True):
+        '''
+        e.g.
+        '?P[?x]'.mapInto('if(A(y),B(y))')
+        -> {'?P[@]':'if(A(@),B(@))', '?x':'y'}
+
+        '?P[@a]'.mapInto('if(A(s(a)),B(s(a)))')
+        -> {'?P[@]':'if(A(@),B(@))', '@a':'s(a)'}
+        -> {'?P[@]':'if(A(s(@),B(s(@))))', '@a':'a'}
+
+        '?P[@a]'.mapInto('if(A(s(a)),B(s(b)))')
+        -> {'?P[@]':'if(@,B(s(b)))', '@a':'A(s(a))'}
+        -> {'?P[@]':'if(A(@),B(s(b)))', '@a':'s(a)'}
+        -> {'?P[@]':'if(A(s(@)),B(s(b)))', '@a':'a'}
+        -> {'?P[@]':'if(A(s(a)),@)', '@a':'B(s(b))'}
+        -> {'?P[@]':'if(A(s(a)),B(@))', '@a':'s(b)'}
+        -> {'?P[@]':'if(A(s(a)),B(s(@)))', '@a':'b'}
+
+        '?P[@Q(?x)]'.mapInto('if(A(s(a)),B(s(b)))')
+        -> {'?P[@]':'if(A(@),B(s(b)))', '@Q':'s', '?x':'a'}
+        -> {'?P[@]':'if(A(s(a)),B(@))', '@Q':'s', '?x':'b'}
+
+        '?P[@Q(@x)]'.mapInto('if(A(s(a)),B(s(b)))')
+        -> {'?P[@]':'if(@,B(s(b)))', '@Q':'A', '@x':'s(a)'}
+        -> {'?P[@]':'if(A(@),B(s(b)))', '@Q':'s', '@x':'a'}
+        -> {'?P[@]':'if(A(s(a)),@)', '@Q':'B', '@x':'s(b)'}
+        -> {'?P[@]':'if(A(s(a)),B(@))', '@Q':'s', '@x':'b'}
+        '''
+
+        results = []
+
+        # Example 1 -> '?P[@a]'.mapInto('if(A(s(a)),B(s(b)))')
+        # Example 2 -> '?P[@Q(@x)]'.mapInto('if(A(s(a)),B(s(b)))')
+
+        # Example 1 -> '?P'
+        # Example 2 -> '?P'
+        op = self[0]
+
+        # Example 1 -> '?x'
+        # Example 2 -> '@Q(@x)
+        arg = self[1]
+
+        # Example 1 & 2-> other = 'if(A(s(a)),B(s(b)))'
+        for s in other.subSentences():
+            # Example 1 & 2 -> 
+            # s = 'if(A(s(a)),B(s(b)))'
+            #   = 'A(s(a))'
+            #   = 'B(s(b))'
+            #   = 's(a)'
+            #   = 's(b)'
+            #   = 'a'
+            #   = 'b'
+
+            for mapping in arg.mapInto(s):
+                # Example 1->
+                # mapping = {'?x':'if(A(s(a)),B(s(b)))'}
+                # ...
+    
+                # Example 2 -> 
+                # mapping = None
+                #          = {'@Q':'A', '@x:'s(a)}
+                #          = {'@Q':'B', '@x:'s(b)}
+                #          = {'@Q':'s', '@x:'a'}
+                #          = {'@Q':'s', '@x:'b'}
+                #          = None
+                #          = None    
+    
+                # Ensure a mapping exists
+                if mapping is None:
+                    continue
+    
+                subs = arg.subsitute(mapping)[0]
+                # Example 1 -> 
+                # subs = 'if(A(s(a)),B(s(b)))'
+                #      = 'A(s(a))'
+                # ...
+    
+                # Example 2 ->
+                # subs = N/A
+                #      = 'A(s(a))'
+                # ...            
+                
+                structs = other.subsitute({subs:sf.generateWff('')}, replaceAll)
+                # Example 1 ->
+                # structure = '@'
+                #           = 'if(@,B(s(b)))'
+                #           = ...
+    
+                # Example 2 -> 
+                # structure = N/A
+                #           = 'if(@,B(s(b)))'
+                # ...
+                
+                for structure in structs:
+                    
+                    # Ensure that we can map the operators
+                    if not op <= structure.op():# or len(structure.args()) == 0:
+                        continue
+                
+                    mapping[op] = structure
+                    results.append(copy.copy(mapping))
+                
+        return results
 
 class SentenceIterator:
     def __init__(self, sen):
@@ -498,26 +593,174 @@ class InvalidSentenceError(Exception):
 
 class SentenceFactory:
     def __init__(self):
-        self._cache = {}
+        self._cache_sen = {}
+        self._cache_wff = {}
+        self._cache_var = {}
+        self._cache_lit = {}
+        self._cache_op = {}
 
-    def generate(self, operator, arguments, printer = None):
+    def generateSentence(self, operator, arguments, data = None):
         '''
         Constructs a sentence using the operator and arguments provided
 
         @param operator - The main operator of the sentence
         @param arguments - The arguments of the main operator
-        @param printer- The sentence printer to use when printing this sentence 
+
+        @return - A sentence that is formed from the operator and the arguments
         '''
 
+        arguments = tuple(arguments)
         # Check if the sentence is in the cache
-        if (operator, arguments) in self._cache:
-            newSentence = self._cache[(operator, arguments)]
+        if (operator, arguments) in self._cache_sen:
+            newSentence = self._cache_sen[(operator, arguments)]
         else:
-            newSentence = Sentence(operator, arguments, printer)
-            self._cache[(operator, arguments)] = newSentence
+            newSentence = Sentence(operator, arguments, data)
+            self._cache_sen[(operator, arguments)] = newSentence
 
         return newSentence
 
+    def generateWff(self, name, symbol = '@', data = None):
+        '''
+        Creates a Wff from the given name
+        '''
+        # Check the cache
+        if name in self._cache_wff:
+            newWff = self._cache_wff[name]
+        else:
+            newWff = Wff(name, symbol, data)
+            self._cache_wff[name] = newWff
+
+        return newWff   
+
+    def generateVariable(self, name, symbol = '?', data = None):
+        '''
+        Creates a Variable from the given name
+        '''
+        # Check the cache
+        if name in self._cache_var:
+            newVariable = self._cache_var[name]
+        else:
+            newVariable = Variable(name, symbol, data)
+            self._cache_var[name] = newVariable
+
+        return newVariable
+
+    def generateLiteral(self, name, symbol = '', data = None):
+        '''
+        Creates a Literal from the given name
+        '''
+        # Check the cache
+        if name in self._cache_lit:
+            newLiteral = self._cache_lit[name]
+        else:
+            newLiteral = Literal(name, symbol, data)
+            self._cache_lit[name] = newLiteral
+
+        return newLiteral
+    
+    def generateOperator(self, mainOperator, arguments, data = None):
+        '''
+        Constructs a operator using the mainOperator and arguments provided
+
+        @param mainOperator - The main mainOperator of the operator
+        @param arguments - The arguments of the main operator
+
+        @return - A operator that is formed from the operator and the arguments
+        '''
+
+        arguments = tuple(arguments)
+        # Check if the sentence is in the cache
+        if (mainOperator, arguments) in self._cache_op:
+            newOp = self._cache_op[(mainOperator, arguments)]
+        else:
+            newOp = Operator(mainOperator, arguments, data)
+            self._cache_op[(mainOperator, arguments)] = newOp
+
+        return newOp
+        
+sf = SentenceFactory()
+
 if __name__ == '__main__':
     # This area used for debugging
-    pass
+    
+    import printers2 as printers
+    import parsers
+    
+    psp = parsers.prefixSentenceParser    
+    
+    printer = lambda sen: printers.prefixSentencePrinter(sen)
+
+    sf = SentenceFactory()
+
+    op1 = sf.generateLiteral('and')
+    op2 = sf.generateVariable('P')
+
+    var1 = sf.generateVariable('A')
+    var2 = sf.generateVariable('B')
+
+    sen1 = sf.generateSentence(op1, (var1, var2))
+    sen2 = sf.generateSentence(op1, (var1, sen1))
+    sen3 = sf.generateSentence(op2, (var1, var2))
+    sen4 = sen1.subsitute({var1:var2, var2:var1})[0]
+
+    def testSens(senA, senB):
+        print("'%s'.mapInto('%s') = %s" % (senA, senB, senA.mapInto(senB)))
+        print("'%s'.mapInto('%s') = %s" % (senB, senA, senB.mapInto(senA)))
+        print('%s <  %s:' % (senA, senB), senA < senB)
+        print('%s <= %s:' % (senA, senB), senA <= senB)
+        print('%s == %s:' % (senA, senB), senA == senB)
+        print('%s != %s:' % (senA, senB), senA != senB)
+        print('%s >= %s:' % (senA, senB), senA >= senB)
+        print('%s >  %s:' % (senA, senB), senA > senB	)
+
+    print(sen1, len(sen1))
+    print(sen2, len(sen2))
+    print(sen3, len(sen3))
+    print()
+    testSens(sen1, sen2)
+    print(sen1.subsitute({var1:sen1}))
+    print()
+    testSens(sen1, sen3)
+    print()
+    testSens(sen3, sen1)
+    print()
+    testSens(sen1, sen4)
+    print()
+    testSens(sen4, sen1)    
+
+    
+    sen5 = psp('if(A(s(a)),B(s(b)))')
+    sen6 = psp('if(A(s(a)),B(s(a)))')
+    print(sen5.terms())
+    print(sen5.subSentences())
+    print(sen6.terms())
+    print(sen6.subSentences())
+    
+    sen7 = psp('@P[?x]')
+    sen8 = psp('@P[@x]')
+    testSens(sen7, sen3)
+    testSens(sen7, sen5)
+    testSens(sen8, sen3)
+    testSens(sen8, sen5)    
+    testSens(sen7, sen8)  
+    
+    sen9 = psp('@P[@b]')
+    sen10 = psp('=(b, b)')
+    print(sen9.mapInto(sen10))
+    print(sen9.mapInto(sen10, False))
+    
+    sen11 = psp('@P[0]')
+    sen12 = psp('=(+(0, 0), 0)')
+    
+    print(sen11.mapInto(sen12, False))
+    
+    sen13 = psp('|-(@P[?c], @P[s(?c)])')
+    sen14 = psp('|-(A(B(C, a), a), A(B(C, s(a)), s(a)))')
+    
+    testSens(sen13, sen14)
+    
+    sen15 = psp('|-(@P[?a], @P[s(?a)])')
+    sen16 = psp('|-(P(b, a), P(s(b), a))')    
+     
+    testSens(sen15, sen16)
+    

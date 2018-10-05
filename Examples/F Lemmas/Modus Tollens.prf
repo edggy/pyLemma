@@ -1,7 +1,7 @@
 include $Lemma/Rules/F Rules.inf
 
 proof
-MT - Sub 1
+Modus Tollens - Sub 1
 a	if(P, Q)				Assumption
 b	not(Q)					Assumption
 c	P						Assumption
@@ -10,9 +10,9 @@ e	Contradiction			Contradiction Intro		b,d
 done
 
 proof
-MT
+Modus Tollens
 1	if(P, Q)				Assumption
 2	not(Q)					Assumption
-3	|-(P, Contradiction)	MT - Sub 1	1,2
+3	|-(P, Contradiction)	Modus Tollens - Sub 1	1,2
 4	not(P)					Not Intro				3
 done

@@ -1,6 +1,6 @@
-include Rules/F Rules - FO.inf
+include $Lemma/Rules/F Rules - FO.inf
 
-include F Lemmas/Hypothetical Syllogism.prf
+include $Lemma/F Lemmas/Hypothetical Syllogism.prf
 
 proof
 "Problem 1" - Sub 1
