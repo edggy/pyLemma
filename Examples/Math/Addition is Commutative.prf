@@ -1,7 +1,7 @@
-include		$Lemma/Rules/F Rules - FO.inf
-include		$Lemma/F Lemmas/com eq.prf
-include		$Lemma/Math/LPA3.prf
-include		$Lemma/Math/LPA4.prf
+include		../Rules/F Rules - FO.inf
+include		../F Lemmas/com eq.prf
+include		LPA3.prf
+include		LPA4.prf
 
 #PA3		ForAll(x, =(+(x, 0), x))							Assumption	# Def PA3
 #PA4		ForAll(x, ForAll(y, =(+(x, s(y)), s(+(x, y)))))		Assumption	# Def PA4
@@ -10,7 +10,7 @@ include		$Lemma/Math/LPA4.prf
 
 proof
 + Com - Sub 2
-include		$Lemma/Axioms/Peano Axioms.axm	3-4
+include		../Axioms/Peano Axioms.axm	3-4
 LPA4	ForAll(x, ForAll(y, =(+(s(x), y), s(+(x, y)))))			LPA4				PA3,PA4
 1		=(+(a,b),+(b,a))										Assumption
 2		ForAll(y, =(+(a, s(y)), s(+(a, y))))					ForAll Elim			PA4
@@ -24,7 +24,7 @@ done
 
 proof
 + Com - Sub 1
-include		$Lemma/Axioms/Peano Axioms.axm	3-4
+include		../Axioms/Peano Axioms.axm	3-4
 1		=(+(a,0), a)											ForAll Elim			PA3
 LPA3	ForAll(x, =(+(0, x), x))								LPA3				PA3,PA4
 2		=(+(0,a), a)											ForAll Elim			LPA3
@@ -36,7 +36,7 @@ done
 
 proof
 + Com
-include		$Lemma/Axioms/Peano Axioms.axm	3-4
+include		../Axioms/Peano Axioms.axm	3-4
 1	|-(,ForAll(y, =(+(a,y),+(y,a))))							+ Com - Sub 1		PA3,PA4
 .	ForAll(x, ForAll(y, =(+(x,y),+(y,x))))						ForAll Intro		1
 done

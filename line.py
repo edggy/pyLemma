@@ -1,13 +1,16 @@
+# coding=utf-8
+
 import weakref
 
-import sentence
-import proof
 import printers
+import proof
+import sentence
+
 
 class Line:
-    '''
+    """
     A line of a Proof
-    '''
+    """
 
     def __init__(self, proof):
         # The proof that this line is in as a weak ref
@@ -29,20 +32,20 @@ class Line:
         self._data = {}
 
     def __iadd__(self, other):
-        '''
+        """
         Adds something to this line
 
         Acts as a shortcut to setSentence, addSupport, and setInference
-        '''
+        """
         if isinstance(other, sentence.Sentence):
             # If we add a sentence, add it as a sentence
             self.setSentence(other)
         elif isinstance(other, Line):
             # If it is a line add it as a support step
-            self.addSupport(other)  
-        elif isinstance(other, (int, long)):
+            self.addSupport(other)
+        elif isinstance(other, int):
             # If it is an int or long get that line and add it to the support set
-            self.addSupport(self._proof()[other]) 
+            self.addSupport(self._proof()[other])
         elif isinstance(other, proof.Proof):
             # If it is an inference rule or proof
             infs = self._proof()._inferences
@@ -55,11 +58,12 @@ class Line:
             # set the inference
             self.setInference(other)
         elif isinstance(other, str):
-            # If it is a string, search for it in the proof's inference rules and add that rule to this line
+            # If it is a string, search for it in the proof's inference rules and add
+            # that rule to this line
             self.setInference(self._proof()._inferences[other])
         else:
             # Otherwise we don't know how to deal with this
-            raise TypeError('other is a ' + str(type(other)))
+            raise TypeError("other is a " + str(type(other)))
         return self
 
     def __str__(self):
@@ -74,52 +78,55 @@ class Line:
         for i in self._support:
             sen = i()._sentence
 
-            # If the item is the sentence or the item is in the sentence, then it is in this
+            # If the item is the sentence or the item is in the sentence, then it is
+            # in this
             if item == sen or item in sen:
                 return True
 
         # If the sentence is a subproof, check the first argument too
-        if self._sentence.op() == '|-' and (item == self._sentence[0] or item in self._sentence[0]):
+        if self._sentence.op() == "|-" and (
+            item == self._sentence[0] or item in self._sentence[0]
+        ):
             return True
 
-        return False	
+        return False
 
     def setSentence(self, sen):
-        '''
+        """
         Set the sentence of this line
-        '''
+        """
         # Reset the line number since the line has chaged. Used for verification caching
         self._num = None
 
         # set the sentence
         self._sentence = sen
-        
-        self._data['sen'] = self._sentence.extraData
+
+        self._data["sen"] = self._sentence.extraData
 
     def getSentence(self):
-        '''
+        """
         Gets the sentence of this line
-        '''
+        """
         return self._sentence
 
     def setInference(self, inf):
-        '''
+        """
         Set the inference rule that this line uses
-        '''
+        """
         # Reset the line number since the line has chaged. Used for verification caching
         self._num = None
         self._inference = inf
 
     def getInference(self):
-        '''
+        """
         Get the inference rule that this line uses
-        '''		
+        """
         return self._inference
 
     def addSupport(self, line):
-        '''
+        """
         Adds another line as a supporting line
-        '''
+        """
         # Reset the line number since the line has chaged. Used for verification caching
         self._num = None
 
@@ -127,9 +134,9 @@ class Line:
         self._support.add(weakref.ref(line))
 
     def discardSuppprt(self, line):
-        '''
+        """
         Removes another line as a supporting line
-        '''		
+        """
         # Reset the line number since the line has chaged. Used for verification caching
         self._num = None
 
@@ -137,15 +144,15 @@ class Line:
         self._support.discard(line)
 
     def getSuppprt(self):
-        '''
+        """
         Returns the set of support steps
-        '''
+        """
         return self._support
-    
-    def isNew(self, variables = None):
+
+    def isNew(self, variables=None):
         if variables is None:
-            variables = self._data['sen']['newVars']
-            
+            variables = self._data["sen"]["newVars"]
+
         for ref in self._support:
             try:
                 refLine = ref()
@@ -154,8 +161,5 @@ class Line:
                         return False
             except ReferenceError:
                 pass
-            
-        return True
-            
-        
 
+        return True

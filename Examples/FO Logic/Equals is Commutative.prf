@@ -1,5 +1,5 @@
-include		$Lemma/Rules/F Rules - FO.inf
-include		$Lemma/F Lemmas/com eq.prf
+include		../Rules/F Rules - FO.inf
+include		../F Lemmas/com eq.prf
 
 proof
 "Equals is Commutative" - Sub 2

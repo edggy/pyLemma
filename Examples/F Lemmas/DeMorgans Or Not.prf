@@ -1,5 +1,5 @@
-include $Lemma/Rules/F Rules.inf
-include $Lemma/F Lemmas/Contra Lemma.prf
+include ../Rules/F Rules.inf
+include Contra Lemma.prf
 
 proof
 DeMorgans Or Not - Sub 1

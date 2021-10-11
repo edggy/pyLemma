@@ -1,8 +1,8 @@
-include		$Lemma/Rules/F Rules - FO.inf
+include		../Rules/F Rules - FO.inf
 
 proof
 LPA3 - Sub 1
-include		$Lemma/Axioms/Peano Axioms.axm		4
+include		../Axioms/Peano Axioms.axm		4
 1	=(+(0, a), a)										Assumption
 2	ForAll(y, =(+(0, s(y)), s(+(0, y))))				ForAll Elim								PA4
 3	=(+(0, s(a)), s(+(0, a)))							ForAll Elim								2
@@ -11,7 +11,7 @@ done
 
 proof
 LPA3
-include		$Lemma/Axioms/Peano Axioms.axm		3-4
+include		../Axioms/Peano Axioms.axm		3-4
 1	=(+(0, 0), 0)										ForAll Elim								PA3
 2	|-(=(+(0, a), a), =(+(0, s(a)), s(a)))				LPA3 - Sub 1							PA4
 .	ForAll(x, =(+(0, x), x))							Peano Induction							1,2

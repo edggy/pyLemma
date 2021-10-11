@@ -1,4 +1,4 @@
-include	$Lemma/Rules/F Rules.inf
+include	F Rules.inf
 
 inference
 ForAll Intro

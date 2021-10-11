@@ -1,9 +1,9 @@
-include		$Lemma/Rules/F Rules - FO.inf
+include		../Rules/F Rules - FO.inf
 
 proof
 "Everything Divides 0" - Sub 2
-include		$Lemma/Axioms/Peano Axioms.axm	5
-include		$Lemma/Axioms/Peano Axioms.axm	8
+include		../Axioms/Peano Axioms.axm	5
+include		../Axioms/Peano Axioms.axm	8
 1	not(=(a,0))															Assumption
 2	=(*(a,0),0)															ForAll Elim			PA5
 3	Exists(z, =(*(a,z),0))												Exists Intro		2
@@ -15,16 +15,16 @@ done
 
 proof
 "Everything Divides 0" - Sub 1
-include		$Lemma/Axioms/Peano Axioms.axm	5
-include		$Lemma/Axioms/Peano Axioms.axm	8
+include		../Axioms/Peano Axioms.axm	5
+include		../Axioms/Peano Axioms.axm	8
 1	|-(not(=(a,0)), Div(a,0))					"Everything Divides 0" - Sub 2		PA5, DefDiv
 .	if(not(=(a,0)),Div(a,0))					If Intro							1
 done
 
 proof
 "Everything Divides 0"
-include		$Lemma/Axioms/Peano Axioms.axm	5
-include		$Lemma/Axioms/Peano Axioms.axm	8
+include		../Axioms/Peano Axioms.axm	5
+include		../Axioms/Peano Axioms.axm	8
 1	|-(,if(not(=(a,0)),Div(a,0)))				"Everything Divides 0" - Sub 1		PA5, DefDiv
 .	ForAll(x, if(not(=(x,0)),Div(x,0)))			ForAll Intro						1
 done

@@ -1,68 +1,74 @@
+# coding=utf-8
+
 import sentence
 
 sf = sentence.sf
 
-def prefixSentenceParser(string, symbols = None):
-    '''
+
+def prefixSentenceParser(string, symbols=None):
+    """
     Parses a sentence from its prefix form
 
     @param string - A string representation of a sentence
-    @param symbols - A dict of symbols to use.  Valid keys are: 'variable', 'wff', 'openParen', 'closeParen', 'seperator'
+    @param symbols - A dict of symbols to use.  Valid keys are: 'variable', 'wff',
+    'openParen', 'closeParen', 'seperator'
 
     @return - A sentence parsed from the string
-    '''
+    """
 
     if symbols is None:
         symbols = {}
 
-    if 'variable' not in symbols:
-        symbols['variable'] = '?'
+    if "variable" not in symbols:
+        symbols["variable"] = "?"
 
-    if 'wff' not in symbols:
-        symbols['wff'] = '@'    
+    if "wff" not in symbols:
+        symbols["wff"] = "@"
 
-    if 'openParen' not in symbols:
-        symbols['openParen'] = '('   
+    if "openParen" not in symbols:
+        symbols["openParen"] = "("
 
-    if 'closeParen' not in symbols:
-        symbols['closeParen'] = ')'
-        
-    if 'openOpParen' not in symbols:
-        symbols['openOpParen'] = '['   
-       
-    if 'closeOpParen' not in symbols:
-        symbols['closeOpParen'] = ']'    
+    if "closeParen" not in symbols:
+        symbols["closeParen"] = ")"
 
-    if 'seperator' not in symbols:
-        symbols['seperator'] = ','
-        
-    if 'newVar' not in symbols:
-        symbols['newVar'] = '$'
+    if "openOpParen" not in symbols:
+        symbols["openOpParen"] = "["
 
+    if "closeOpParen" not in symbols:
+        symbols["closeOpParen"] = "]"
+
+    if "seperator" not in symbols:
+        symbols["seperator"] = ","
+
+    if "newVar" not in symbols:
+        symbols["newVar"] = "$"
 
     def init(string):
         # ForAll[?x](...)
-        #if symbols['openOpParen'] in string and symbols['openParen'] != symbols['openOpParen']:
-            #newSymbols = dict(symbols)
-            #newSymbols['openParen'] = symbols['openOpParen']
-            #newSymbols['closeParen'] = symbols['closeOpParen']
-            #newSymbols['openOpParen'] = symbols['openParen']
-            #newSymbols['closeOpParen'] = symbols['closeParen']    
-            #return prefixSentenceParser(string, newSymbols)
-        
+        # if symbols['openOpParen'] in string and symbols['openParen'] != symbols[
+        # 'openOpParen']:
+        # newSymbols = dict(symbols)
+        # newSymbols['openParen'] = symbols['openOpParen']
+        # newSymbols['closeParen'] = symbols['closeOpParen']
+        # newSymbols['openOpParen'] = symbols['openParen']
+        # newSymbols['closeOpParen'] = symbols['closeParen']
+        # return prefixSentenceParser(string, newSymbols)
+
         # If the operator starts with the variableSymbol then make it a generic operator
         # @P
-        if string.startswith(symbols['wff']):
-            return sf.generateWff(string[len(symbols['wff']):], symbols['wff'])
-        
+        if string.startswith(symbols["wff"]):
+            return sf.generateWff(string[len(symbols["wff"]) :], symbols["wff"])
+
         # ?x
-        if string.startswith(symbols['variable']):
-            return sf.generateVariable(string[len(symbols['variable']):], symbols['variable'])
+        if string.startswith(symbols["variable"]):
+            return sf.generateVariable(
+                string[len(symbols["variable"]) :], symbols["variable"]
+            )
         else:
             # Otherwise make it a literal
             return sf.generateLiteral(string)
-        
-    def findMatch(string, pos, endSymbol, direction = 1):
+
+    def findMatch(string, pos, endSymbol, direction=1):
         depth = 1
         startSymbol = string[pos]
         while depth > 0:
@@ -72,7 +78,7 @@ def prefixSentenceParser(string, symbols = None):
             elif string[pos] == endSymbol:
                 depth -= 1
         return pos
-            
+
     def splitArgs(string, symbols):
         # A                     -> ['A']
         # (A)                   -> ['A']
@@ -91,28 +97,28 @@ def prefixSentenceParser(string, symbols = None):
         # ForAll(x, P(x, a))
         # ForAll(x, P(x, A(a)))
         # ForAll(x, P(x, A(a, b)))
-        
+
         # Remove whitespace
         string = "".join(string.split())
-        
+
         # Find the first paren
-        firstP = string.find(symbols['openParen'])
-        firstOpP = string.find(symbols['openOpParen'])
-        
+        firstP = string.find(symbols["openParen"])
+        firstOpP = string.find(symbols["openOpParen"])
+
         # Find the matching paren
         try:
-            otherP = findMatch(string, firstP, symbols['closeParen'])
+            otherP = findMatch(string, firstP, symbols["closeParen"])
         except IndexError:
             otherP = -1
-            
+
         try:
-            otherOpP = findMatch(string, firstOpP, symbols['closeOpParen']) 
+            otherOpP = findMatch(string, firstOpP, symbols["closeOpParen"])
         except IndexError:
-            otherOpP = -1        
-        
+            otherOpP = -1
+
         result = []
         oper = False
-        
+
         if firstOpP < 0 or (firstP < firstOpP and firstP >= 0):
             # A                     -> ['A']
             # (A)                   -> ['A']
@@ -120,7 +126,7 @@ def prefixSentenceParser(string, symbols = None):
             # not(A)                -> ['not', 'A']
             # and(A, B)             -> ['and', 'A', 'B']
             # and(not(A), B)        -> ['and', 'not(A)', 'B']
-            # and(not(A), or(B, C)) -> ['and', 'not(A)', 'or(B, C)']    
+            # and(not(A), or(B, C)) -> ['and', 'not(A)', 'or(B, C)']
             # |-(@P[?a], @P[s(?a)])
             # ForAll(x, P(x))
             # ForAll(x, P(s(x)))
@@ -128,128 +134,155 @@ def prefixSentenceParser(string, symbols = None):
             # ForAll(x, P[s(x)])
             # ForAll(x, P(x, a))
             # ForAll(x, P(x, A(a)))
-            # ForAll(x, P(x, A(a, b)))            
-            
+            # ForAll(x, P(x, A(a, b)))
+
             if firstP < 0:
                 # A                     -> ['A']
-                return string, [], '', oper
-            
+                return string, [], "", oper
+
             elif firstP == 0:
                 # (A)                   -> ['A']
                 # (not(A))              -> ['not', 'A']
-                
+
                 return splitArgs(string[1:-1], symbols)
             else:
                 # not(A)                -> ['not', 'A']
                 # and(A, B)             -> ['and', 'A', 'B']
                 # and(not(A), B)        -> ['and', 'not(A)', 'B']
-                # and(not(A), or(B, C)) -> ['and', 'not(A)', 'or(B, C)']   
+                # and(not(A), or(B, C)) -> ['and', 'not(A)', 'or(B, C)']
                 # ForAll(x, P(x))       -> ['ForAll', 'x', 'P(x)']
                 # ForAll(x, P(s(x)))
                 # ForAll(x, P[x])
                 # ForAll(x, P[s(x)])
                 # ForAll(x, P(x, a))
                 # ForAll(x, P(x, A(a)))
-                # ForAll(x, P(x, A(a, b)))     
+                # ForAll(x, P(x, A(a, b)))
                 # |-(@P[?a], @P[s(?a)])
-                
-                
-                # take the operator and its parens out of the string, anything after the last paren is extra
-                opStr, string, extra = string[:firstP], string[firstP + 1:otherP], string[otherP + 1:]
+
+                # take the operator and its parens out of the string, anything after
+                # the last paren is extra
+                opStr, string, extra = (
+                    string[:firstP],
+                    string[firstP + 1 : otherP],
+                    string[otherP + 1 :],
+                )
         else:
             # P[x]                  -> ['P', 'x']
             # P[s(x)]               -> ['P', 's(x)']
             # P[s(x, y)]            -> ['P', 's(x, y)']
-            
-            
-            #if otherOpP < firstP:
-                # ForAll(x, P(x))       -> ['ForAll', 'P(x)']
-                # ForAll(x, P(s(x)))
-                # ForAll(x, P[x])
-                # ForAll(x, P[s(x)])
-                # ForAll(x, P(x, a))
-                # ForAll(x, P(x, A(a)))
-                # ForAll(x, P(x, A(a, b)))
-                # ForAll[x](P(x, A(a, b)))   
-            #    opStr, string, extra = string[:firstP], string[firstP + 1:otherP], string[otherP + 1:]
-                
-            #else:
-                # P[x]                  -> ['P', 'x']
-                # P[Q[x]]               -> ['P', 'Q[x]']
-                # P[s(x)]               -> ['P', 's(x)']
-                # P[s(x, y)]            -> ['P', 's(x, y)']                
-            opStr, string, extra = string[:firstOpP], string[firstOpP + 1:otherOpP], string[otherOpP + 1:]
+
+            # if otherOpP < firstP:
+            # ForAll(x, P(x))       -> ['ForAll', 'P(x)']
+            # ForAll(x, P(s(x)))
+            # ForAll(x, P[x])
+            # ForAll(x, P[s(x)])
+            # ForAll(x, P(x, a))
+            # ForAll(x, P(x, A(a)))
+            # ForAll(x, P(x, A(a, b)))
+            # ForAll[x](P(x, A(a, b)))
+            #    opStr, string, extra = string[:firstP], string[firstP + 1:otherP],
+            #    string[otherP + 1:]
+
+            # else:
+            # P[x]                  -> ['P', 'x']
+            # P[Q[x]]               -> ['P', 'Q[x]']
+            # P[s(x)]               -> ['P', 's(x)']
+            # P[s(x, y)]            -> ['P', 's(x, y)']
+            opStr, string, extra = (
+                string[:firstOpP],
+                string[firstOpP + 1 : otherOpP],
+                string[otherOpP + 1 :],
+            )
             oper = True
-                
-        curStr = ''
-        for tok in string.split(','):
+
+        curStr = ""
+        for tok in string.split(","):
             curStr += tok
-            parenCount = curStr.count(symbols['openParen']) - curStr.count(symbols['closeParen']) + \
-                curStr.count(symbols['openOpParen']) - curStr.count(symbols['closeOpParen'])
-            
+            parenCount = (
+                curStr.count(symbols["openParen"])
+                - curStr.count(symbols["closeParen"])
+                + curStr.count(symbols["openOpParen"])
+                - curStr.count(symbols["closeOpParen"])
+            )
+
             if parenCount == 0:
                 result.append(curStr)
-                curStr = ''
+                curStr = ""
             else:
-                curStr += ','
-                
+                curStr += ","
+
         return opStr, result, extra, oper
-            
 
     # Remove all the whitespace in the string
     string = "".join(string.split())
 
     # Count the difference in the number of open and close parenthesis
-    parenCount = string.count(symbols['openParen']) - string.count(symbols['closeParen'])
-    parenOpCount = string.count(symbols['openOpParen']) - string.count(symbols['closeOpParen'])
+    parenCount = string.count(symbols["openParen"]) - string.count(
+        symbols["closeParen"]
+    )
+    parenOpCount = string.count(symbols["openOpParen"]) - string.count(
+        symbols["closeOpParen"]
+    )
 
     # raise error if they are unequal
     if parenCount > 0:
-        raise sentence.InvalidSentenceError('Unmatched Close Parenthesis' + symbols['closeParen'])
+        raise sentence.InvalidSentenceError(
+            "Unmatched Close Parenthesis" + symbols["closeParen"]
+        )
     elif parenCount < 0:
-        raise sentence.InvalidSentenceError(symbols['openParen'] + 'Unmatched Open Parenthesis')
+        raise sentence.InvalidSentenceError(
+            symbols["openParen"] + "Unmatched Open Parenthesis"
+        )
     elif parenOpCount > 0:
-        raise sentence.InvalidSentenceError('Unmatched Close Parenthesis' + symbols['closeOpParen'])
+        raise sentence.InvalidSentenceError(
+            "Unmatched Close Parenthesis" + symbols["closeOpParen"]
+        )
     elif parenOpCount < 0:
-        raise sentence.InvalidSentenceError(symbols['openOpParen'] + 'Unmatched Open Parenthesis')        
-    
+        raise sentence.InvalidSentenceError(
+            symbols["openOpParen"] + "Unmatched Open Parenthesis"
+        )
+
     opStr, argStr, extra, oper = splitArgs(string, symbols)
-    
+
     data = dict(symbols)
-    data['extra'] = {}
-    
-    if extra.startswith(symbols['newVar']):
-        data['extra']['newVars'] = [prefixSentenceParser(s) for s in extra.split(symbols['newVar'])[1:]]
-    
+    data["extra"] = {}
+
+    if extra.startswith(symbols["newVar"]):
+        data["extra"]["newVars"] = [
+            prefixSentenceParser(s) for s in extra.split(symbols["newVar"])[1:]
+        ]
+
     if oper:
-        
-        data['openParen'] = symbols['openOpParen']
-        data['closeParen'] = symbols['closeOpParen']   
-        
+
+        data["openParen"] = symbols["openOpParen"]
+        data["closeParen"] = symbols["closeOpParen"]
+
         op = prefixSentenceParser(opStr, data)
-        args = [prefixSentenceParser(arg, symbols) for arg in argStr]  
+        args = [prefixSentenceParser(arg, symbols) for arg in argStr]
         return sf.generateOperator(op, args, data)
-    
+
     if len(argStr) == 0:
         return init(opStr)
-        
+
     op = prefixSentenceParser(opStr, data)
     try:
         op = sf.generateSentence(op[0], op[1:])
     except IndexError:
         pass
-    args = [prefixSentenceParser(arg, symbols) for arg in argStr]      
-    return sf.generateSentence(op, args, data) 
+    args = [prefixSentenceParser(arg, symbols) for arg in argStr]
+    return sf.generateSentence(op, args, data)
 
-def defaultInferenceParser(string, sentenceParser = None):
-    '''
+
+def defaultInferenceParser(string, sentenceParser=None):
+    """
     Parses an inference into an Inference object
 
     @param string - A string representation of an inference rule
-    @param sentenceParser - A function that parses the sentences in the inference rule (Defaults to prefixSentenceParser)
+    @param sentenceParser - A function that parses the sentences in the inference
+    rule (Defaults to prefixSentenceParser)
 
     @return - An inference parsed from the string
-    '''
+    """
 
     if sentenceParser is None:
         sentenceParser = prefixSentenceParser
@@ -257,13 +290,13 @@ def defaultInferenceParser(string, sentenceParser = None):
     from inference import Inference
 
     # Split the sting into lines
-    lines = string.split('\n')
+    lines = string.split("\n")
 
     # Strip all the lines
     lines = map(lambda a: a.strip(), lines)
 
     # Remove all blank lines
-    lines = filter(lambda a: not len(a) == 0, lines)
+    lines = list(filter(lambda a: not len(a) == 0, lines))
 
     # The name is the first line
     name = lines.pop(0)
@@ -277,31 +310,32 @@ def defaultInferenceParser(string, sentenceParser = None):
     return Inference(name, conclusion, premises)
 
 
-def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
-    '''
+def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
+    """
     Takes a string or file and parses it into a proof
 
     @param string - The string to parse, file to use, or name of file to use
-    @param sentenceParser - The parser to use to parse sentences.  Defaults to prefixSentenceParser
-    @param inferenceParser - The parser to use to parse inferences.  Defaults to defaultInferenceParser
+    @param sentenceParser - The parser to use to parse sentences.  Defaults to
+    prefixSentenceParser
+    @param inferenceParser - The parser to use to parse inferences.  Defaults to
+    defaultInferenceParser
     @return - A dict of all the proofs parsed from the given input
-    '''
+    """
     import os
 
     # Path is used as the currnt working directory for imports
     path = os.path.dirname(os.path.realpath(__file__))
-    filename = None	
+    filename = None
 
     # Attempt to convert string into the data if it is a file or filename
     dataString = None
-    
+
     # Try to open the string as if it was a file
     try:
         with open(string) as f:
             path = os.path.dirname(os.path.realpath(string))
             filename = os.path.join(path, string)
             dataString = f.read()
-
 
     except (TypeError, IOError):
         # string is not a name of a file
@@ -313,166 +347,172 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
             dataString = string.read()
             path = os.path.dirname(os.path.realpath(string.name))
             filename = os.path.join(path, string.name)
-    
+
         except AttributeError:
             # string is not a file
             pass
-        
+
     # string must be the data
     if dataString is None:
         dataString = string
 
     # Set the default parders
-    if sentenceParser is None: sentenceParser = prefixSentenceParser
-    if inferenceParser is None: inferenceParser = defaultInferenceParser
+    if sentenceParser is None:
+        sentenceParser = prefixSentenceParser
+    if inferenceParser is None:
+        inferenceParser = defaultInferenceParser
 
     def include(string, data):
-        toks = string.split(data['split'])
-        toks = filter(None, toks)
-    
+        toks = string.split(data["split"])
+        toks = list(filter(None, toks))
+
         keepLines = None
         if len(toks) > 2:
             keepLines = set([])
-            subToks = [s.strip() for s in toks[2].split(data['subSplit'])]
+            subToks = [s.strip() for s in toks[2].split(data["subSplit"])]
             for num in subToks:
-                if data['range'] in num:
-                    start, end = [int(s.strip()) for s in num.split(data['range'])]
+                if data["range"] in num:
+                    start, end = [int(s.strip()) for s in num.split(data["range"])]
                     for i in range(start, end + 1):
                         keepLines.add(i)
                 else:
                     keepLines.add(int(num))
-    
+
         if len(toks) > 1:
             # Get the filename to include
             filename = os.path.normpath(os.path.expandvars(toks[1].strip()))
         else:
-            filename = os.path.normpath(os.path.expandvars(string[len(data['include']):].strip()))
-    
+            filename = os.path.normpath(
+                os.path.expandvars(string[len(data["include"]) :].strip())
+            )
+
         # Check if it is a relative path, if it is get the absolute path
         if not os.path.isabs(filename):
-            filename = os.path.join(data['path'], filename)
-    
+            filename = os.path.join(data["path"], filename)
+
         # Check to see that we have not already included this file
-        if filename not in data['imported'] or keepLines is not None:
+        if filename not in data["imported"] or keepLines is not None:
             try:
                 with open(filename) as f:
                     # Add all the new lines to the beginning of the queue
-                    # e.g. q = [o1,o2,o3,o4] file = '1\n2\n3\n4\n5 -> [1,2,3,4,5,o1,o2,o3,o4]
-                    lines = f.read().split('\n')
+                    # e.g. q = [o1,o2,o3,o4] file = '1\n2\n3\n4\n5 -> [1,2,3,4,5,o1,
+                    # o2,o3,o4]
+                    lines = f.read().split("\n")
                     for n, line in enumerate(reversed(lines)):
                         lineNum = len(lines) - n
                         if keepLines is None or lineNum in keepLines:
-                            data['queue'].appendleft((line, lineNum, filename))
-        
+                            data["queue"].appendleft((line, lineNum, filename))
+
                 # Add as an included file
-                data['imported'].add(filename)       
+                data["imported"].add(filename)
             except IOError as e:
-                raise LineError('%s %s' % (e.strerror, e.filename))
-    
+                raise LineError("%s %s" % (e.strerror, e.filename))
+
     # The function to use by default
     def init(string, data):
-        '''
+        """
         @param string - The current line of the proof as a string
         @param data - The data of parsing the previous lines
-        '''
+        """
         # The initial state
 
-        if string.startswith(data['assign']):
-            toks = string.split(data['split'])
-            toks = filter(None, toks)
+        if string.startswith(data["assign"]):
+            toks = string.split(data["split"])
+            toks = list(filter(None, toks))
             if len(toks) >= 3:
                 data[toks[1]] = toks[2]
-            
-        else:	
+
+        else:
             # Set the state to the line
-            data['state'] = string.strip().lower()	
+            data["state"] = string.strip().lower()
 
     # The function to use while parsing an inference rule
     def inf(string, data):
-        '''
+        """
         @param string - The current line of the proof as a string
         @param data - The data of parsing the previous lines
-        '''		
+        """
         # We are in the inference parsing state
 
         # Check to see if we are done
-        if string == data['infDone']:
+        if string == data["infDone"]:
             # Use the data from the previous lines to parse the proof
-            inf = inferenceParser(data['curInf'], sentenceParser)
+            inf = inferenceParser(data["curInf"], sentenceParser)
 
             # Add it to the data
-            data['infs'][inf.name] = inf
+            data["infs"][inf.name] = inf
 
             # Reset 'curInf'
-            data['curInf'] = None
+            data["curInf"] = None
 
             # Set state to default
-            data['state'] = None
+            data["state"] = None
             return
 
         # Check to see if we are in the middle of an infrence rule
-        if 'curInf' in data and data['curInf'] is not None:
+        if "curInf" in data and data["curInf"] is not None:
             # Add to the current rule
-            data['curInf'] += '\n' + string
+            data["curInf"] += "\n" + string
         else:
             # Start a new inference rule
-            data['curInf'] = string
+            data["curInf"] = string
 
     # The function to use while parsing a proof
     def prf(string, data):
-        '''
+        """
         @param string - The current line of the proof as a string
         @param data - The data of parsing the previous lines
-        '''		
+        """
         from proof import Proof
 
         # check if we are done
-        if string == data['proofDone']:
+        if string == data["proofDone"]:
             # Set state to default
-            data['state'] = None
+            data["state"] = None
 
             # Reset the current proof
-            data['curProof'] = None
-            return			
+            data["curProof"] = None
+            return
 
         # Check to see if we are in the middle of a proof
-        if 'curProof' not in data or data['curProof'] is None:
+        if "curProof" not in data or data["curProof"] is None:
             # Start a new proof
             # Name is the first line
             name = string.strip()
 
             # Set the current proof to name
-            data['curProof'] = name
+            data["curProof"] = name
 
             # Create a new proof with this name
-            data['proofs'][name] = Proof(name)
+            data["proofs"][name] = Proof(name)
 
             # Add it as an infrence rule too
-            data['infs'][name] = data['proofs'][name]
+            data["infs"][name] = data["proofs"][name]
 
             # Create a dict to store the lines
-            data['curLines'] = {}
+            data["curLines"] = {}
             return
 
         # Retrive the current proof
-        curProof = data['proofs'][data['curProof']]
+        curProof = data["proofs"][data["curProof"]]
 
         # Retrieve the current lines
-        lines = data['curLines']
+        lines = data["curLines"]
 
         # Split the line into tokens
-        toks = string.split(data['proofSplit'])
+        toks = string.split(data["proofSplit"])
 
         # Remove empty strings, this is used to allow multiple tabs between entries
         toks = filter(None, toks)
 
         # Strip all the parts
-        toks = map(lambda a: a.strip(), toks)	
+        toks = list(map(lambda a: a.strip(), toks))
 
-        # toks[0] = Line number, toks[1] = Sentence, toks[2] = Inference rule name, toks[3] = support step
+        # toks[0] = Line number, toks[1] = Sentence, toks[2] = Inference rule name,
+        # toks[3] = support step
         if len(toks) < 2:
             # There should be at least two parts
-            raise LineError
+            raise LineError()
 
         # Parse the sentence
         curSen = sentenceParser(toks[1])
@@ -483,28 +523,30 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
         # Adds the line to the dict using the line number as the key
         lines[toks[0]] = curProof[-1]
 
-
         if len(toks) == 2:
             # If there are exactly two parts, then this line is an assumption
-            curProof[-1] += data['infs']['Assumption']
+            curProof[-1] += data["infs"]["Assumption"]
         if len(toks) >= 3:
-            # If there are at least 3 parts then the third part is the name of the inference rule to use
+            # If there are at least 3 parts then the third part is the name of the
+            # inference rule to use
             try:
-                curProof[-1] += data['infs'][toks[2]]
+                curProof[-1] += data["infs"][toks[2]]
             except KeyError as e:
-                raise LineError('%s is not a defined inference rule or proof' % e.message)		
+                raise LineError(
+                    "%s is not a defined inference rule or proof" % e.args[0]
+                )
         if len(toks) >= 4:
-            # If there are at least 4 parts then the fourth part is a list of supporting lines
+            # If there are at least 4 parts then the fourth part is a list of
+            # supporting lines
             try:
-                for i in toks[3].split(data['supportSplit']):
+                for i in toks[3].split(data["supportSplit"]):
                     # Add each support as supporting steps
                     curProof[-1] += lines[i.strip()]
             except KeyError as e:
-                raise LineError('%s is not a line' % e.message)
-
+                raise LineError("%s is not a line" % e.args[0])
 
     # Finite state machine states
-    fsm = {None:init, '':init, 'inference':inf, 'proof':prf}
+    fsm = {None: init, "": init, "inference": inf, "proof": prf}
 
     from collections import deque
 
@@ -513,86 +555,103 @@ def defaultProofParser(string, sentenceParser = None, inferenceParser = None):
     linequeue = deque()
 
     # Add all of the lines from the given input
-    for n, line in enumerate(dataString.split('\n')):
+    for n, line in enumerate(dataString.split("\n")):
         linequeue.append((line, n, filename))
 
     # Create the data, used to keep track of the state of the fsm
-    data = {'queue':linequeue, 'proofs':{}, 'infs':{'Assumption':defaultInferenceParser('Assumption\n@A')}, 
-            'state': None, 'include':'include', 'assign':'set', 'split':'\t', 'subSplit':',', 'path':path, 'imported':set([filename]), 'proofDone': 'done', 
-            'infDone': 'done', 'proofSplit': '\t', 'supportSplit': ',', 'comment': '#', 'range':'-'}
+    data = {
+        "queue": linequeue,
+        "proofs": {},
+        "infs": {"Assumption": defaultInferenceParser("Assumption\n@A")},
+        "state": None,
+        "include": "include",
+        "assign": "set",
+        "split": "\t",
+        "subSplit": ",",
+        "path": path,
+        "imported": set([filename]),
+        "proofDone": "done",
+        "infDone": "done",
+        "proofSplit": "\t",
+        "supportSplit": ",",
+        "comment": "#",
+        "range": "-",
+    }
 
-    from sentence import InvalidSentenceError
-
-    while len(data['queue']) > 0:
+    while len(data["queue"]) > 0:
         # Grab the next line off of the queue
-        line, n, filename = data['queue'].popleft()
+        line, n, filename = data["queue"].popleft()
 
         # Retrieve the current path
-        data['path'] = os.path.dirname(os.path.realpath(filename))
+        data["path"] = os.path.dirname(os.path.realpath(filename))
 
         try:
             # Ignore everything after the comment symbol for commenting
-            line = line.split(data['comment'])[0].strip()
+            line = line.split(data["comment"])[0].strip()
 
             # Ignore the line if it is blank
             if len(line) != 0:
                 # Check to see if this is an 'include' statement
-                if line.startswith(data['include']):
+                if line.startswith(data["include"]):
                     include(line, data)
                 else:
                     # Run the function corrosponding to the state of the FSM
-                    fsm[data['state']](line, data)
+                    fsm[data["state"]](line, data)
 
         except (sentence.InvalidSentenceError, LineError) as e:
             # Raise an error to tell the user that there is a parsing error
-            e.message = 'Error in "%s", line %d:\t%s' % (filename, n+1, e.message)
-            raise LineError(e.message)
+            raise LineError(
+                'Error in "%s", line %d:\t%s' % (filename, n + 1, e.args[0])
+            )
 
     # Return all the proofs parsed
-    return data['proofs']
+    return data["proofs"]
+
 
 class LineError(Exception):
-    '''
+    """
     An Exception on a specific line while parsing the proof
-    '''
+    """
+
     pass
 
-if __name__ == '__main__':
 
-    formatStr = '%-40sExpected:  %s'
-    
-    sen1 = prefixSentenceParser('A')
-    sen2a = prefixSentenceParser('?B')
-    sen2b = prefixSentenceParser('@C')
+if __name__ == "__main__":
 
-    print(formatStr % (sen1, 'A'))
-    print(formatStr % (sen2a, '?B'))
-    print(formatStr % (sen2b, '@C'))
+    formatStr = "%-40sExpected:  %s"
 
-    print(formatStr % (sen1.mapInto(sen2a), '[]'))
-    print(formatStr % (sen1.mapInto(sen2b), '[]'))
-    print(formatStr % (sen2a.mapInto(sen1), '[{?B:A}]'))
-    print(formatStr % (sen2a.mapInto(sen2b), '[]'))
-    print(formatStr % (sen2b.mapInto(sen1), '[{@C:A}]'))
-    print(formatStr % (sen2b.mapInto(sen2a), '[{@C:?B}]')    )
+    sen1 = prefixSentenceParser("A")
+    sen2a = prefixSentenceParser("?B")
+    sen2b = prefixSentenceParser("@C")
 
-    sen3 = prefixSentenceParser('not(@A)')
-    sen4 = prefixSentenceParser('not(or(A,not(A)))')
+    print(formatStr % (sen1, "A"))
+    print(formatStr % (sen2a, "?B"))
+    print(formatStr % (sen2b, "@C"))
 
-    print(formatStr % (sen3, 'not(@A)'))
-    print(formatStr % (sen4, 'not(or(A,not(A)))'))
-    print(formatStr % (sen4.generalize(), 'not(or(@A,not(@A)))'))
+    print(formatStr % (sen1.mapInto(sen2a), "[]"))
+    print(formatStr % (sen1.mapInto(sen2b), "[]"))
+    print(formatStr % (sen2a.mapInto(sen1), "[{?B:A}]"))
+    print(formatStr % (sen2a.mapInto(sen2b), "[]"))
+    print(formatStr % (sen2b.mapInto(sen1), "[{@C:A}]"))
+    print(formatStr % (sen2b.mapInto(sen2a), "[{@C:?B}]"))
 
-    print(formatStr % (sen3.mapInto(sen4), '[{not: not, @A: or(A,not(A))}]'))
-    print(formatStr % (sen4.mapInto(sen3), '[]') )
+    sen3 = prefixSentenceParser("not(@A)")
+    sen4 = prefixSentenceParser("not(or(A,not(A)))")
 
-    sen5 = prefixSentenceParser('not(not(@A))')
+    print(formatStr % (sen3, "not(@A)"))
+    print(formatStr % (sen4, "not(or(A,not(A)))"))
+    print(formatStr % (sen4.generalize(), "not(or(@A,not(@A)))"))
 
-    print(formatStr % (sen5, 'not(not(@A))'))
+    print(formatStr % (sen3.mapInto(sen4), "[{not: not, @A: or(A,not(A))}]"))
+    print(formatStr % (sen4.mapInto(sen3), "[]"))
 
-    sen6 = prefixSentenceParser('=(+(?x, ?y), ?x)')
+    sen5 = prefixSentenceParser("not(not(@A))")
 
-    sen7 = prefixSentenceParser('=(+(?a, ?b), ?a)')
+    print(formatStr % (sen5, "not(not(@A))"))
+
+    sen6 = prefixSentenceParser("=(+(?x, ?y), ?x)")
+
+    sen7 = prefixSentenceParser("=(+(?a, ?b), ?a)")
 
     print(sen6 < sen7, sen6 <= sen7, sen6 == sen7, sen6 >= sen7, sen6 > sen7)
     print(sen7 < sen6, sen7 <= sen6, sen7 == sen6, sen7 >= sen6, sen7 > sen6)
@@ -600,19 +659,18 @@ if __name__ == '__main__':
     import sentence
 
     def normalize(sen, data):
-        if 'index' not in data:
-            data['index'] = 0
-            data['map'] = {}
+        if "index" not in data:
+            data["index"] = 0
+            data["map"] = {}
 
         if isinstance(sen, sentence.Variable) and not isinstance(sen, sentence.Literal):
-            if sen not in data['map']:
-                newSen = sf.generateVariable(chr(data['index'] + ord('a')))
-                data['index'] += 1
-                data['map'][sen] = newSen
-            return data['map'][sen]
-            
-        return sen
+            if sen not in data["map"]:
+                newSen = sf.generateVariable(chr(data["index"] + ord("a")))
+                data["index"] += 1
+                data["map"][sen] = newSen
+            return data["map"][sen]
 
+        return sen
 
     print(sen6.applyFunction(normalize))
 
@@ -621,33 +679,37 @@ if __name__ == '__main__':
             return data[sen]
         return sen
 
-    print(sen7.applyFunction(subsitute, {prefixSentenceParser('?a'):prefixSentenceParser('*(2,3)')}))
+    print(
+        sen7.applyFunction(
+            subsitute, {prefixSentenceParser("?a"): prefixSentenceParser("*(2,3)")}
+        )
+    )
 
-    emptySen = prefixSentenceParser('')
+    emptySen = prefixSentenceParser("")
 
     print(emptySen, emptySen.op(), emptySen.arity())
 
-    emptyArg = prefixSentenceParser('|-(,A)')
+    emptyArg = prefixSentenceParser("|-(,A)")
 
     print("'%r', '%r', '%r'" % (emptyArg, emptyArg[0], emptyArg[1]))
 
-    sen8 = prefixSentenceParser('ForAll[?x](?P[?x])')
+    sen8 = prefixSentenceParser("ForAll[?x](?P[?x])")
 
-    sen9 = prefixSentenceParser('ForAll[x](if(A(x),B(x)))')
+    sen9 = prefixSentenceParser("ForAll[x](if(A(x),B(x)))")
 
-    print(sen8, prefixSentenceParser('?x') in sen8)
-    print(sen8[1].subsitute({prefixSentenceParser('?x'):prefixSentenceParser('a')}))
+    print(sen8, prefixSentenceParser("?x") in sen8)
+    print(sen8[1].subsitute({prefixSentenceParser("?x"): prefixSentenceParser("a")}))
 
     print(sen8 < sen9)
 
     def cornner(sen, data):
-        data['str'] += '<' + str(sen) + '>'
+        data["str"] += "<" + str(sen) + ">"
         return sen
 
-    data = {'str':''}
+    data = {"str": ""}
     sen8.applyFunction(cornner, data)
-    print(data['str'])
-    
-    sen10 = prefixSentenceParser('@P[s(@x)]')
-    
+    print(data["str"])
+
+    sen10 = prefixSentenceParser("@P[s(@x)]")
+
     print(sen10)

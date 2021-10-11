@@ -1,4 +1,4 @@
-include		$Lemma/Rules/F Rules - FO.inf
+include		../Rules/F Rules - FO.inf
 
 proof
 = Com

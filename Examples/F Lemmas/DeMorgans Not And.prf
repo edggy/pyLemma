@@ -1,5 +1,5 @@
-include $Lemma/Rules/F Rules.inf
-include $Lemma/F Lemmas/DeMorgans Not Or.prf
+include ../Rules/F Rules.inf
+include DeMorgans Not Or.prf
 
 proof
 DeMorgans Not And - Sub 1

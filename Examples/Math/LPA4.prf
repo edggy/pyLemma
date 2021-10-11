@@ -1,8 +1,8 @@
-include		$Lemma/Rules/F Rules - FO.inf
+include		../Rules/F Rules - FO.inf
 
 proof
 LPA4 - Sub 2
-include		$Lemma/Axioms/Peano Axioms.axm		4
+include		../Axioms/Peano Axioms.axm		4
 1	=(+(s(a), b), s(+(a, b)))											Assumption
 2	ForAll(y, =(+(s(a), s(y)), s(+(s(a), y))))							ForAll Elim			PA4
 3	=(+(s(a), s(b)), s(+(s(a), b)))										ForAll Elim			2
@@ -14,7 +14,7 @@ done
 
 proof
 LPA4 - Sub 1
-include		$Lemma/Axioms/Peano Axioms.axm		3-4
+include		../Axioms/Peano Axioms.axm		3-4
 1	=(+(s(a), 0), s(a))													ForAll Elim			PA3
 2	=(+(a, 0), a)														ForAll Elim			PA3
 3	=(+(s(a), 0), s(+(a, 0)))											= Elim Right		1,2
@@ -24,7 +24,7 @@ done
 
 proof
 LPA4
-include		$Lemma/Axioms/Peano Axioms.axm		3-4
+include		../Axioms/Peano Axioms.axm		3-4
 1	|-(,ForAll(y, =(+(s(a), y), s(+(a, y)))))							LPA4 - Sub 1		PA3, PA4
 .	ForAll(x, ForAll(y, =(+(s(x), y), s(+(x, y)))))						ForAll Intro		1
 done

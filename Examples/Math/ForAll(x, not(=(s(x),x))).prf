@@ -1,11 +1,11 @@
-include	$Lemma/Rules/F Rules - FO.inf
+include	../Rules/F Rules - FO.inf
 
 #PA1		ForAll(x, not(=(s(x), 0)))							Assumption	# Def PA1
 #PA2		ForAll(x, ForAll(y, if(=(s(x), s(y)), =(x,y))))		Assumption	# Def PA2
 
 proof
 "ForAll(x, not(=(s(x),x)))" - Sub 2
-include		$Lemma/Axioms/Peano Axioms.axm	2
+include		../Axioms/Peano Axioms.axm	2
 1	not(=(s(a),a))									Assumption
 2	=(s(s(a)),s(a))									Assumption
 3	ForAll(y, if(=(s(s(a)), s(y)), =(s(a),y)))		ForAll Elim								PA2
@@ -16,7 +16,7 @@ done
 
 proof
 "ForAll(x, not(=(s(x),x)))" - Sub 1
-include		$Lemma/Axioms/Peano Axioms.axm	2
+include		../Axioms/Peano Axioms.axm	2
 1	not(=(s(a),a))									Assumption
 2	|-(=(s(s(a)),s(a)), Contradiction)				"ForAll(x, not(=(s(x),x)))" - Sub 2		PA2,1
 .	not(=(s(s(a)),s(a)))							Not Intro								2
@@ -24,9 +24,8 @@ done
 
 proof
 "ForAll(x, not(=(s(x),x)))"
-include		$Lemma/Axioms/Peano Axioms.axm	1,2
+include		../Axioms/Peano Axioms.axm	1,2
 1	not(=(s(0),0))									ForAll Elim								PA1
 2	|-(not(=(s(a),a)), not(=(s(s(a)),s(a))))		"ForAll(x, not(=(s(x),x)))" - Sub 1		PA2
 .	ForAll(x, not(=(s(x),x)))						Peano Induction							1,2
 done
-

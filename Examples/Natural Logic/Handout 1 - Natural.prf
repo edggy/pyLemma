@@ -1,4 +1,4 @@
-include $Lemma/Rules/Natural Inference Rules.inf
+include ../Rules/Natural Inference Rules.inf
 
 proof
 "Problem 1"

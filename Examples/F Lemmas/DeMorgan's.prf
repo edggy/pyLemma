@@ -1,4 +1,4 @@
-include $Lemma/Rules/F Rules.inf
+include ../Rules/F Rules.inf
 
 proof
 DeMorgan's (or over not) - Sub 2

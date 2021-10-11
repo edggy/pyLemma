@@ -1,4 +1,4 @@
-include $Lemma/Rules/KS Rules.inf
+include ../Rules/KS Rules.inf
 
 proof
 MT

@@ -1,4 +1,4 @@
-include		$Lemma/Rules/Equiv Rules.inf
+include		../Rules/Equiv Rules.inf
 
 proof
 "basic proof"

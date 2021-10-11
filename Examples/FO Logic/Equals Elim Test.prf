@@ -1,41 +1,41 @@
-include Rules/F Rules - FO.inf
+include ../Rules/F Rules - FO.inf
 
 proof
 "Equals Elim Test 1"
 1	=(a, b)		Assumption
 2	and(a, a)	Assumption
-.	and(b, b)	= Elim		1,2
+.	and(b, b)	= Elim Left		1,2
 done
 
 proof
 "Equals Elim Test 2"
 1	=(a, b)		Assumption
 2	and(a, a)	Assumption
-.	and(b, a)	= Elim		1,2
+.	and(b, a)	= Elim Left		1,2
 done
 
 proof
 "Equals Elim Test 3"
 1	=(a, b)		Assumption
 2	and(a, a)	Assumption
-.	and(a, b)	= Elim		1,2
+.	and(a, b)	= Elim Left		1,2
 done
 
 proof
 "Equals Elim Test 4"
 1	=(a, b)		Assumption
 2	and(a, a)	Assumption
-.	and(c, d)	= Elim		1,2
+.	and(c, d)	= Elim Left		1,2
 done
 
 proof
 "Equals Elim Test 5"
-1	ForAll[x](P(x,x))		Assumption
+1	ForAll(x, P(x,x))		Assumption
 2	P(x,y)					ForAll Elim		1
 done
 
 proof
 "Equals Elim Test 6"
-1	ForAll[x](P(x,x))		Assumption
+1	ForAll(x, P(x,x))		Assumption
 2	P(y,y)					ForAll Elim		1
 done

@@ -1,12 +1,12 @@
-include		$Lemma/Rules/F Rules - FO.inf
+include		../Rules/F Rules - FO.inf
 
-#  $Lemma/Axioms/Set Axioms.axm
+#  ../Axioms/Set Axioms.axm
 #setEquals	ForAll(X, ForAll(Y, if(ForAll(e, iff(In(e,X), In(e,Y)))), =(X, Y)))				Assumption
 #defSubset	ForAll(X, ForAll(Y, iff(Subset(X, Y), ForAll(e, iff(In(e,X), In(e,Y))))))		Assumption
 #defUnion	ForAll(X, ForAll(Y, ForAll(e, iff(In(e, union(X, Y)), or(In(e,X), In(e,Y))))))	Assumption
 #defInter	ForAll(X, ForAll(Y, ForAll(e, iff(In(e, Inter(X, Y)), or(In(e,X), In(e,Y))))))	Assumption
 
-include		$Lemma/F Lemmas/iff A A.prf
+include		../F Lemmas/iff A A.prf
 
 proof
 "Subset(A,A)" - Sub 1
@@ -15,7 +15,7 @@ done
 
 proof
 "Subset(A,A)"
-include		$Lemma/Axioms/Set Axioms.axm	2
+include		../Axioms/Set Axioms.axm	2
 1			ForAll(Y, iff(Subset(A, Y), ForAll(e, iff(In(e,A), In(e,Y)))))					ForAll Elim				defSubset
 2			iff(Subset(A, A), ForAll(e, iff(In(e,A), In(e,A))))								ForAll Elim				1
 3			|-(, iff(In(e,A), In(e,A)))														"Subset(A,A)" - Sub 1
@@ -25,7 +25,7 @@ done
 
 proof
 "ForAll(A, Subset(A,A))"
-include		$Lemma/Axioms/Set Axioms.axm	2
+include		../Axioms/Set Axioms.axm	2
 sub1		|-(, Subset(A,A))																"Subset(A,A)"		defSubset
 .			ForAll(A, Subset(A,A))															ForAll Intro		sub1
 done
