@@ -3,8 +3,8 @@
 import os.path
 import sys
 
-import parsers
-import printers
+from . import parsers
+from . import printers
 
 
 # Python 3 compatibility
@@ -51,10 +51,7 @@ flags = parseFlags(sys.argv)
 # Check if we have a valid file
 if "f" not in flags or not os.path.isfile(flags["f"]):
     # Try to open a file select box
-    try:
-        import tkinter as tk
-    except ImportError:
-        import Tkinter as tk
+    import tkinter as tk
 
     try:
         import tkFileDialog as tfd

@@ -1,6 +1,14 @@
 # coding=utf-8
+from collections import deque
+from collections.abc import Callable
+from dataclasses import dataclass, Field, field
+from enum import auto, Enum
+from pathlib import Path
+from typing import NamedTuple, Optional, TextIO, TYPE_CHECKING
 
-import sentence
+import typing_extensions
+
+from . import sentence
 
 sf = sentence.sf
 
@@ -287,7 +295,7 @@ def defaultInferenceParser(string, sentenceParser=None):
     if sentenceParser is None:
         sentenceParser = prefixSentenceParser
 
-    from inference import Inference
+    from .inference import Inference
 
     # Split the sting into lines
     lines = string.split("\n")
@@ -310,7 +318,46 @@ def defaultInferenceParser(string, sentenceParser=None):
     return Inference(name, conclusion, premises)
 
 
-def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
+if TYPE_CHECKING:
+    from .proof import Proof
+    from .inference import Inference
+    from .line import Line
+
+
+class FSM_state(Enum):
+    DEFAULT = auto()
+    INFERENCE = auto()
+    PROOF = auto()
+
+
+@dataclass
+class FsmData:
+    queue: deque[tuple[str, int, Optional[Path]]] = field(default_factory=deque)
+    proofs: dict[str, 'Proof'] = field(default_factory=dict)
+    infs: 'dict[str, Inference | Proof]' = field(
+        default_factory=lambda: {"Assumption": defaultInferenceParser("Assumption\n@A")}
+    )
+    state: FSM_state = FSM_state.DEFAULT
+    include: str = "include"
+    assign: str = "set"
+    split: str = "\t"
+    subSplit: str = ","
+    path: Optional[Path] = None
+    imported: set[Path] = field(default_factory=set)
+    proofDone: str = "done"
+    infDone: str = "done"
+    proofSplit: str = "\t"
+    supportSplit: str = ","
+    comment: str = "#"
+    range: str = "-"
+    curInf: Optional[str] = None
+    curProof: Optional[str] = None
+    curLines: 'dict[str, Line]' = field(default_factory=dict)
+
+
+def defaultProofParser(
+    string: str | Path | TextIO, sentenceParser=None, inferenceParser=None
+):
     """
     Takes a string or file and parses it into a proof
 
@@ -323,56 +370,55 @@ def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
     """
     import os
 
-    # Path is used as the currnt working directory for imports
-    path = os.path.dirname(os.path.realpath(__file__))
-    filename = None
+    # Path is used as the current working directory for imports
+    path = Path(__file__)
+    filename: Optional[Path] = None
 
     # Attempt to convert string into the data if it is a file or filename
-    dataString = None
+    dataString: Optional[str] = None
 
-    # Try to open the string as if it was a file
-    try:
-        with open(string) as f:
-            path = os.path.dirname(os.path.realpath(string))
-            filename = os.path.join(path, string)
-            dataString = f.read()
+    if isinstance(string, str):
+        # Try to open the string as if it was a file
+        filename = Path(string)
+        if filename.exists() and filename.is_file():
+            path = filename.parent
+            with filename.open() as f:
+                dataString = f.read()
+        else:
+            filename = None
+            # string must be the data
+            dataString = string
 
-    except (TypeError, IOError):
-        # string is not a name of a file
-        pass
-
-    if dataString is None:
+    elif isinstance(string, TextIO):
         # Try to read a file if it is a file
-        try:
-            dataString = string.read()
-            path = os.path.dirname(os.path.realpath(string.name))
-            filename = os.path.join(path, string.name)
+        dataString = string.read()
+        filename = Path(string.name)
+        path = filename.parent
+    elif isinstance(string, Path):
+        filename = string
+        path = filename.parent
+        with filename.open() as f:
+            dataString = f.read()
+    else:
+        raise TypeError(f"Expected str or file, got {type(string)}.")
 
-        except AttributeError:
-            # string is not a file
-            pass
-
-    # string must be the data
-    if dataString is None:
-        dataString = string
-
-    # Set the default parders
+    # Set the default parsers
     if sentenceParser is None:
         sentenceParser = prefixSentenceParser
     if inferenceParser is None:
         inferenceParser = defaultInferenceParser
 
-    def include(string, data):
-        toks = string.split(data["split"])
+    def include(string: str, data: FsmData) -> None:
+        toks = string.split(data.split)
         toks = list(filter(None, toks))
 
         keepLines = None
         if len(toks) > 2:
             keepLines = set([])
-            subToks = [s.strip() for s in toks[2].split(data["subSplit"])]
+            subToks = [s.strip() for s in toks[2].split(data.subSplit)]
             for num in subToks:
-                if data["range"] in num:
-                    start, end = [int(s.strip()) for s in num.split(data["range"])]
+                if data.range in num:
+                    start, end = [int(s.strip()) for s in num.split(data.range)]
                     for i in range(start, end + 1):
                         keepLines.add(i)
                 else:
@@ -380,18 +426,16 @@ def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
 
         if len(toks) > 1:
             # Get the filename to include
-            filename = os.path.normpath(os.path.expandvars(toks[1].strip()))
+            filename = Path(toks[1].strip())
         else:
-            filename = os.path.normpath(
-                os.path.expandvars(string[len(data["include"]) :].strip())
-            )
+            filename = Path(string[len(data.include) :].strip())
 
         # Check if it is a relative path, if it is get the absolute path
-        if not os.path.isabs(filename):
-            filename = os.path.join(data["path"], filename)
+        if not filename.is_absolute():
+            filename = data.path / filename
 
         # Check to see that we have not already included this file
-        if filename not in data["imported"] or keepLines is not None:
+        if filename not in data.imported or keepLines is not None:
             try:
                 with open(filename) as f:
                     # Add all the new lines to the beginning of the queue
@@ -401,33 +445,39 @@ def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
                     for n, line in enumerate(reversed(lines)):
                         lineNum = len(lines) - n
                         if keepLines is None or lineNum in keepLines:
-                            data["queue"].appendleft((line, lineNum, filename))
+                            data.queue.appendleft((line, lineNum, filename))
 
                 # Add as an included file
-                data["imported"].add(filename)
+                data.imported.add(filename)
             except IOError as e:
                 raise LineError("%s %s" % (e.strerror, e.filename))
 
     # The function to use by default
-    def init(string, data):
+    def init(string: str, data: FsmData) -> None:
         """
         @param string - The current line of the proof as a string
         @param data - The data of parsing the previous lines
         """
         # The initial state
 
-        if string.startswith(data["assign"]):
-            toks = string.split(data["split"])
+        if string.startswith(data.assign):
+            toks = string.split(data.split)
             toks = list(filter(None, toks))
             if len(toks) >= 3:
-                data[toks[1]] = toks[2]
+                setattr(data, toks[1], toks[2])
 
         else:
             # Set the state to the line
-            data["state"] = string.strip().lower()
+            match string.strip().lower():
+                case '':
+                    data.state = FSM_state.DEFAULT
+                case 'proof':
+                    data.state = FSM_state.PROOF
+                case 'inference':
+                    data.state = FSM_state.INFERENCE
 
     # The function to use while parsing an inference rule
-    def inf(string, data):
+    def inf(string: str, data: FsmData) -> None:
         """
         @param string - The current line of the proof as a string
         @param data - The data of parsing the previous lines
@@ -435,84 +485,80 @@ def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
         # We are in the inference parsing state
 
         # Check to see if we are done
-        if string == data["infDone"]:
+        if string == data.infDone:
             # Use the data from the previous lines to parse the proof
-            inf = inferenceParser(data["curInf"], sentenceParser)
+            inf = inferenceParser(data.curInf, sentenceParser)
 
             # Add it to the data
-            data["infs"][inf.name] = inf
+            data.infs[inf.name] = inf
 
             # Reset 'curInf'
-            data["curInf"] = None
+            data.curInf = None
 
             # Set state to default
-            data["state"] = None
+            data.state = FSM_state.DEFAULT
             return
 
-        # Check to see if we are in the middle of an infrence rule
-        if "curInf" in data and data["curInf"] is not None:
+        # Check to see if we are in the middle of an inference rule
+        if data.curInf is not None:
             # Add to the current rule
-            data["curInf"] += "\n" + string
+            data.curInf += "\n" + string
         else:
             # Start a new inference rule
-            data["curInf"] = string
+            data.curInf = string
 
     # The function to use while parsing a proof
-    def prf(string, data):
+    def prf(string: str, data: FsmData) -> None:
         """
         @param string - The current line of the proof as a string
         @param data - The data of parsing the previous lines
         """
-        from proof import Proof
+        from .proof import Proof
 
         # check if we are done
-        if string == data["proofDone"]:
+        if string == data.proofDone:
             # Set state to default
-            data["state"] = None
+            data.state = FSM_state.DEFAULT
 
             # Reset the current proof
-            data["curProof"] = None
+            data.curProof = None
             return
 
         # Check to see if we are in the middle of a proof
-        if "curProof" not in data or data["curProof"] is None:
+        if data.curProof is None:
             # Start a new proof
             # Name is the first line
             name = string.strip()
 
             # Set the current proof to name
-            data["curProof"] = name
+            data.curProof = name
 
             # Create a new proof with this name
-            data["proofs"][name] = Proof(name)
+            data.proofs[name] = Proof(name)
 
-            # Add it as an infrence rule too
-            data["infs"][name] = data["proofs"][name]
+            # Add it as an inference rule too
+            data.infs[name] = data.proofs[name]
 
-            # Create a dict to store the lines
-            data["curLines"] = {}
+            # Clear the dict to store the lines
+            data.curLines.clear()
             return
 
-        # Retrive the current proof
-        curProof = data["proofs"][data["curProof"]]
+        # Retrieve the current proof
+        curProof = data.proofs[data.curProof]
 
         # Retrieve the current lines
-        lines = data["curLines"]
+        lines = data.curLines
 
         # Split the line into tokens
-        toks = string.split(data["proofSplit"])
-
         # Remove empty strings, this is used to allow multiple tabs between entries
-        toks = filter(None, toks)
-
         # Strip all the parts
-        toks = list(map(lambda a: a.strip(), toks))
+        toks = [t.strip() for t in string.split(data.proofSplit) if t]
 
         # toks[0] = Line number, toks[1] = Sentence, toks[2] = Inference rule name,
         # toks[3] = support step
         if len(toks) < 2:
             # There should be at least two parts
-            raise LineError()
+            raise LineError("Each line should be at least two parts")
 
         # Parse the sentence
         curSen = sentenceParser(toks[1])
@@ -525,12 +571,12 @@ def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
 
         if len(toks) == 2:
             # If there are exactly two parts, then this line is an assumption
-            curProof[-1] += data["infs"]["Assumption"]
+            curProof[-1] += data.infs["Assumption"]
         if len(toks) >= 3:
             # If there are at least 3 parts then the third part is the name of the
             # inference rule to use
             try:
-                curProof[-1] += data["infs"][toks[2]]
+                curProof[-1] += data.infs[toks[2]]
             except KeyError as e:
                 raise LineError(
                     "%s is not a defined inference rule or proof" % e.args[0]
@@ -539,64 +585,45 @@ def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
             # If there are at least 4 parts then the fourth part is a list of
             # supporting lines
             try:
-                for i in toks[3].split(data["supportSplit"]):
+                for i in toks[3].split(data.supportSplit):
                     # Add each support as supporting steps
                     curProof[-1] += lines[i.strip()]
             except KeyError as e:
                 raise LineError("%s is not a line" % e.args[0])
 
     # Finite state machine states
-    fsm = {None: init, "": init, "inference": inf, "proof": prf}
+    fsm: dict[FSM_state, Callable[[str, FsmData], None]] = {
+        FSM_state.DEFAULT: init,
+        FSM_state.INFERENCE: inf,
+        FSM_state.PROOF: prf,
+    }
 
-    from collections import deque
-
-    # Create a queue for all of the lines to process
-    # An element should be a 3-tuple of (string, line number, filename)
-    linequeue = deque()
+    # Create the data, used to keep track of the state of the fsm
+    data = FsmData(path=path)
 
     # Add all of the lines from the given input
     for n, line in enumerate(dataString.split("\n")):
-        linequeue.append((line, n, filename))
+        data.queue.append((line, n, filename))
 
-    # Create the data, used to keep track of the state of the fsm
-    data = {
-        "queue": linequeue,
-        "proofs": {},
-        "infs": {"Assumption": defaultInferenceParser("Assumption\n@A")},
-        "state": None,
-        "include": "include",
-        "assign": "set",
-        "split": "\t",
-        "subSplit": ",",
-        "path": path,
-        "imported": set([filename]),
-        "proofDone": "done",
-        "infDone": "done",
-        "proofSplit": "\t",
-        "supportSplit": ",",
-        "comment": "#",
-        "range": "-",
-    }
-
-    while len(data["queue"]) > 0:
+    while len(data.queue) > 0:
         # Grab the next line off of the queue
-        line, n, filename = data["queue"].popleft()
+        line, n, filename = data.queue.popleft()
 
         # Retrieve the current path
-        data["path"] = os.path.dirname(os.path.realpath(filename))
+        data.path = path if filename is None else filename.parent
 
         try:
             # Ignore everything after the comment symbol for commenting
-            line = line.split(data["comment"])[0].strip()
+            line = line.split(data.comment)[0].strip()
 
             # Ignore the line if it is blank
             if len(line) != 0:
                 # Check to see if this is an 'include' statement
-                if line.startswith(data["include"]):
+                if line.startswith(data.include):
                     include(line, data)
                 else:
-                    # Run the function corrosponding to the state of the FSM
-                    fsm[data["state"]](line, data)
+                    # Run the function corresponding to the state of the FSM
+                    fsm[data.state](line, data)
 
         except (sentence.InvalidSentenceError, LineError) as e:
             # Raise an error to tell the user that there is a parsing error
@@ -605,7 +632,7 @@ def defaultProofParser(string, sentenceParser=None, inferenceParser=None):
             )
 
     # Return all the proofs parsed
-    return data["proofs"]
+    return data.proofs
 
 
 class LineError(Exception):
@@ -616,7 +643,7 @@ class LineError(Exception):
     pass
 
 
-if __name__ == "__main__":
+def main():
 
     formatStr = "%-40sExpected:  %s"
 
@@ -655,8 +682,6 @@ if __name__ == "__main__":
 
     print(sen6 < sen7, sen6 <= sen7, sen6 == sen7, sen6 >= sen7, sen6 > sen7)
     print(sen7 < sen6, sen7 <= sen6, sen7 == sen6, sen7 >= sen6, sen7 > sen6)
-
-    import sentence
 
     def normalize(sen, data):
         if "index" not in data:
@@ -713,3 +738,7 @@ if __name__ == "__main__":
     sen10 = prefixSentenceParser("@P[s(@x)]")
 
     print(sen10)
+
+
+if __name__ == "__main__":
+    main()

@@ -2,9 +2,9 @@
 
 import weakref
 
-import printers
-import proof
-import sentence
+from . import printers
+from . import proof
+from . import sentence
 
 
 class Line:

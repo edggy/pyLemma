@@ -2,8 +2,8 @@
 
 import copy
 
-import printers
-import util
+from . import printers
+from . import util
 
 
 class Sentence:

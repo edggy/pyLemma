@@ -1,7 +1,7 @@
 # coding=utf-8
 
-import printers
-import proof
+from . import printers
+from . import proof
 
 
 class InferenceIterator:

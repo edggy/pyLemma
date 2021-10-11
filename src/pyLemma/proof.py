@@ -2,11 +2,11 @@
 
 from collections import deque
 
-import inference
-import line
-import printers
-import sentence
-import util
+from . import inference
+from . import line
+from . import printers
+from . import sentence
+from . import util
 
 
 class Proof:

@@ -1,9 +1,9 @@
 # coding=utf-8
 from pathlib import Path
 
-import parsers
+from pyLemma import parsers
 
-ROOT_DIR = Path("..").absolute()
+ROOT_DIR = Path(__file__).parent.parent.absolute()
 
 
 def validate_file(file: Path):
